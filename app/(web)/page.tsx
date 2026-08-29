@@ -10,6 +10,8 @@ import Servicios from "./components/Servicios";
 import Conocenos from "./components/Conocenos";
 import Ubicacion from "./components/Ubicacion";
 
+export const dynamic = "force-dynamic"; // La portada consulta cursos desde la BD en tiempo de ejecución
+
 export const metadata: Metadata = {
   title: "Proyecto Piña | Academia Pre-Universitaria en Iquitos",
   description: "Asegura tu ingreso a la universidad con Proyecto Piña. Preparación pre-universitaria de excelencia en Ciencias, Letras y más.",

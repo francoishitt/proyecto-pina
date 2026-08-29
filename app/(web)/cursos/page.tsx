@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import Hero from "./components/Hero";
 import Catalogo from "./components/Catalogo";
 
-export const revalidate = 60; // Revalida los datos cada 60 segundos
+export const dynamic = "force-dynamic"; // Consulta la BD solo en tiempo de ejecución, no durante el build
 
 export default async function CursosPage() {
   const [cursosData, categoriasData, subcategoriasData] = await Promise.all([

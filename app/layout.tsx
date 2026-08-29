@@ -14,6 +14,7 @@ const geistMono = Geist_Mono({
 
 // Configuración de SEO Global para Google y Redes Sociales
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://proyectopiña.com"),
   title: "Proyecto Piña | Academia Pre-Universitaria en Loreto",
   description: "Descarga materiales gratuitos, PDFs, prácticas y simulacros tipo examen de admisión. Prepárate con la mejor academia de la Amazonía peruana.",
   keywords: ["academia preuniversitaria", "Iquitos", "Loreto", "exámenes de admisión", "UNAP", "cursos gratis", "Proyecto Piña"],
