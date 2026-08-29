@@ -2,8 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
+function origenPublico(request: NextRequest) {
+  const configurado = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configurado) return configurado.replace(/\/$/, "");
+
+  const proto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim()
+    || request.headers.get("host")?.split(",")[0]?.trim();
+
+  if (proto && host) return `${proto}://${host}`;
+  return request.nextUrl.origin;
+}
+
 function volverLogin(request: NextRequest, mensaje: string) {
-  const url = new URL("/login", request.url);
+  const url = new URL("/login", origenPublico(request));
   url.searchParams.set("error", mensaje);
   return NextResponse.redirect(url, 303);
 }
@@ -32,7 +44,9 @@ export async function POST(request: NextRequest) {
       return volverLogin(request, "Esta cuenta no tiene acceso al panel administrativo.");
     }
 
-    const response = NextResponse.redirect(new URL("/admin", request.url), 303);
+    // IMPORTANTE: Hostinger ejecuta la app internamente en 0.0.0.0:3000.
+    // Nunca construir redirecciones públicas con request.url.
+    const response = NextResponse.redirect(new URL("/admin", origenPublico(request)), 303);
     response.cookies.set("admin_session", usuario.id, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

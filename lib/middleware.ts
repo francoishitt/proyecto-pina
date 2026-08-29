@@ -1,12 +1,24 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+function origenPublico(request: NextRequest) {
+  const configurado = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  if (configurado) return configurado.replace(/\/$/, "");
+
+  const proto = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
+  const host = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim()
+    || request.headers.get("host")?.split(",")[0]?.trim();
+
+  if (proto && host) return `${proto}://${host}`;
+  return request.nextUrl.origin;
+}
+
 export function middleware(request: NextRequest) {
   const cookieSesion = request.cookies.get("admin_session")?.value;
   const urlActual = request.nextUrl.pathname;
 
   if (urlActual.startsWith("/admin") && !cookieSesion) {
-    return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.redirect(new URL("/login", origenPublico(request)));
   }
 
   const response = NextResponse.next();

@@ -1,5 +1,5 @@
 # Proyecto Piña
 
-Versión actual: **V1.4.2**
+Versión: **V1.4.3**
 
-Objetivo principal: estabilidad de login, publicación inmediata de cambios y control de caché.
+Corrección crítica: redirecciones públicas correctas en Hostinger después del login y en middleware/proxy.
