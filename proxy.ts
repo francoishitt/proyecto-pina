@@ -19,7 +19,9 @@ export function proxy(request: NextRequest) {
       path: "/",
       maxAge: 30 * 60,
     });
+  }
 
+  if (urlActual === "/login" || urlActual.startsWith("/admin")) {
     response.headers.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
     response.headers.set("Pragma", "no-cache");
     response.headers.set("Expires", "0");
@@ -34,5 +36,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/login"],
 };
