@@ -1,14 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Toaster } from "sonner";
 import FormularioLogin from "./components/Formulario";
-import { obtenerUsuarioSesion } from "@/lib/auth";
 
-export default async function LoginPage() {
-  const usuario = await obtenerUsuarioSesion();
-  if (usuario) redirect("/admin");
-
+export default function LoginPage() {
   return (
     <main className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 py-12">
       <Toaster position="top-center" richColors />
