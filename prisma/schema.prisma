@@ -18,7 +18,7 @@ model Usuario {
   nombre          String?
   apellidos       String?
   password        String    // Aquí guardaremos la contraseña encriptada
-  rol             String    @default("ESTUDIANTE") // "ADMIN", "SUPERVISOR" o "ESTUDIANTE"
+  rol             String    @default("ESTUDIANTE") // "ADMIN", "SUPERVISOR", "EDITOR" o "ESTUDIANTE"
   
   // Campos para la verificación OTP
   otp             String?   // El código de 4 dígitos

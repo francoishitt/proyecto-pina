@@ -78,14 +78,16 @@ export default function AdminClientLayout({
   }
 
   const esAdmin = usuarioInicial.rol === "ADMIN";
+  const esSupervisor = usuarioInicial.rol === "SUPERVISOR";
+  const puedeEstructura = esAdmin || esSupervisor;
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const iniciales = `${usuarioInicial.nombre.charAt(0)}${usuarioInicial.apellidos.charAt(0)}`.toUpperCase();
 
   const links = [
     { href: "/admin", label: "Panel", icon: LayoutDashboard, visible: true },
     { href: "/admin/cursos", label: "Materiales", icon: BookOpen, visible: true },
-    { href: "/admin/categorias", label: "Categorías", icon: FolderTree, visible: esAdmin },
-    { href: "/admin/subcategorias", label: "Subcategorías", icon: ListTree, visible: esAdmin },
+    { href: "/admin/categorias", label: "Categorías", icon: FolderTree, visible: puedeEstructura },
+    { href: "/admin/subcategorias", label: "Subcategorías", icon: ListTree, visible: puedeEstructura },
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, visible: esAdmin },
     { href: "/admin/perfil", label: "Perfil", icon: CircleUser, visible: true },
   ].filter((link) => link.visible);
@@ -123,7 +125,7 @@ export default function AdminClientLayout({
 
         <div className="px-5 pt-4">
           <span className="inline-flex rounded-full bg-slate-800 border border-slate-700 px-3 py-1 text-[10px] font-bold tracking-wider text-orange-400">
-            {esAdmin ? "ADMINISTRADOR" : "SUPERVISOR"}
+            {esAdmin ? "ADMINISTRADOR" : esSupervisor ? "SUPERVISOR" : "EDITOR"}
           </span>
         </div>
 
@@ -175,7 +177,7 @@ export default function AdminClientLayout({
             <div>
               <h2 className="text-lg font-semibold text-slate-800 hidden sm:block">Administración</h2>
               <p className="text-[11px] text-slate-400 hidden md:block">
-                {esAdmin ? "Control total del sistema" : "Gestión de materiales académicos"}
+                {esAdmin ? "Control total del sistema" : esSupervisor ? "Gestión de cinta y materiales" : "Carga y edición de materiales"}
               </p>
             </div>
           </div>

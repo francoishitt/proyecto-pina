@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
-import { exigirAdmin, mensajeErrorPermisos } from "@/lib/auth";
+import { exigirGestorEstructura, mensajeErrorPermisos } from "@/lib/auth";
 import { categoriaSchema } from "@/lib/validations/categoria.schema";
 
 // 1. Creamos nuestra propia interfaz estricta (Cero "any")
@@ -58,7 +58,7 @@ export async function obtenerCategorias() {
 
 export async function crearCategoria(formData: FormData) {
   try {
-    await exigirAdmin();
+    await exigirGestorEstructura();
     const raw = {
       nombre: formData.get("nombre"),
       slug: formData.get("slug"),
@@ -89,7 +89,7 @@ export async function crearCategoria(formData: FormData) {
 
 export async function actualizarCategoria(id: string, formData: FormData) {
   try {
-    await exigirAdmin();
+    await exigirGestorEstructura();
     const raw = {
       nombre: formData.get("nombre"),
       slug: formData.get("slug"),
@@ -121,7 +121,7 @@ export async function actualizarCategoria(id: string, formData: FormData) {
 
 export async function eliminarCategoria(id: string) {
   try {
-    await exigirAdmin();
+    await exigirGestorEstructura();
     await prisma.categoria.delete({ where: { id } });
     // Limpia la caché global instantáneamente
     revalidatePath("/", "layout");

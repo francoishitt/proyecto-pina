@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import { KeyRound, Loader2, Plus, Trash2, UserCog, X } from "lucide-react";
 import { toast } from "sonner";
 import {
-  cambiarPasswordSupervisor,
-  crearSupervisor,
-  eliminarSupervisor,
+  cambiarPasswordUsuarioOperativo,
+  cambiarRolUsuarioOperativo,
+  crearUsuarioOperativo,
+  eliminarUsuarioOperativo,
 } from "@/actions/usuario.action";
 
-interface Supervisor {
+type RolOperativo = "SUPERVISOR" | "EDITOR";
+
+interface UsuarioOperativo {
   id: string;
   nombre: string | null;
   apellidos: string | null;
@@ -21,7 +24,7 @@ interface Supervisor {
 }
 
 interface Props {
-  usuariosIniciales: Supervisor[];
+  usuariosIniciales: UsuarioOperativo[];
 }
 
 const formularioVacio = {
@@ -29,7 +32,9 @@ const formularioVacio = {
   apellidos: "",
   email: "",
   password: "",
+  rol: "SUPERVISOR" as RolOperativo,
 };
+
 
 export default function ClienteUsuarios({ usuariosIniciales }: Props) {
   const router = useRouter();
@@ -45,24 +50,38 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
   const handleCrear = async (e: React.FormEvent) => {
     e.preventDefault();
     setGuardando(true);
-    const res = await crearSupervisor(form);
+    const res = await crearUsuarioOperativo(form);
     setGuardando(false);
 
     if (!res.success) {
-      toast.error(res.error || "No se pudo crear el supervisor.");
+      toast.error(res.error || "No se pudo crear el usuario.");
       return;
     }
 
-    toast.success("Supervisor creado correctamente.");
+    toast.success(`${form.rol === "SUPERVISOR" ? "Supervisor" : "Editor"} creado correctamente.`);
     setForm(formularioVacio);
     setMostrarFormulario(false);
+    refrescar();
+  };
+
+  const handleCambiarRol = async (id: string, rol: RolOperativo) => {
+    setProcesandoId(id);
+    const res = await cambiarRolUsuarioOperativo(id, rol);
+    setProcesandoId(null);
+
+    if (!res.success) {
+      toast.error(res.error || "No se pudo cambiar el rol.");
+      return;
+    }
+
+    toast.success("Rol actualizado.");
     refrescar();
   };
 
   const handleReset = async (id: string) => {
     if (!nuevaPassword) return;
     setProcesandoId(id);
-    const res = await cambiarPasswordSupervisor(id, nuevaPassword);
+    const res = await cambiarPasswordUsuarioOperativo(id, nuevaPassword);
     setProcesandoId(null);
 
     if (!res.success) {
@@ -78,11 +97,11 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
   const handleEliminar = async (id: string, nombre: string) => {
     if (!window.confirm(`¿Eliminar el acceso de ${nombre}?`)) return;
     setProcesandoId(id);
-    const res = await eliminarSupervisor(id);
+    const res = await eliminarUsuarioOperativo(id);
     setProcesandoId(null);
 
     if (!res.success) {
-      toast.error(res.error || "No se pudo eliminar el supervisor.");
+      toast.error(res.error || "No se pudo eliminar el acceso.");
       return;
     }
 
@@ -96,7 +115,7 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
         <div>
           <h1 className="text-2xl font-semibold text-slate-800">Usuarios</h1>
           <p className="text-sm text-slate-500 mt-1">
-            Crea accesos de supervisor para el personal de la academia.
+            Crea supervisores para gestionar la cinta y materiales, o editores para cargar materiales PDF.
           </p>
         </div>
         <button
@@ -105,7 +124,7 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
           className="bg-orange-600 hover:bg-orange-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition shadow-sm cursor-pointer"
         >
           {mostrarFormulario ? <X size={18} /> : <Plus size={18} />}
-          {mostrarFormulario ? "Cancelar" : "Nuevo supervisor"}
+          {mostrarFormulario ? "Cancelar" : "Nuevo usuario"}
         </button>
       </div>
 
@@ -116,7 +135,7 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
         >
           <div className="flex items-center gap-2 text-slate-800 font-semibold">
             <UserCog size={20} className="text-orange-600" />
-            Nuevo acceso de supervisor
+            Nuevo acceso operativo
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="space-y-1.5">
@@ -158,10 +177,23 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
                 placeholder="8+ caracteres, mayús., minús., número y símbolo"
               />
             </label>
+            <label className="space-y-1.5 md:col-span-2">
+              <span className="text-xs font-semibold uppercase text-slate-600">Rol</span>
+              <select
+                value={form.rol}
+                onChange={(e) => setForm({ ...form, rol: e.target.value as RolOperativo })}
+                className="w-full px-3 py-2.5 border border-slate-300 rounded-lg text-sm outline-none focus:ring-1 focus:ring-orange-500 bg-white"
+              >
+                <option value="SUPERVISOR">SUPERVISOR — cinta + categorías + subcategorías + materiales</option>
+                <option value="EDITOR">EDITOR — solo materiales PDF</option>
+              </select>
+            </label>
           </div>
-          <p className="text-xs text-slate-500">
-            El supervisor podrá gestionar materiales PDF, pero no categorías, subcategorías, usuarios ni eliminaciones definitivas.
-          </p>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-600 space-y-1">
+            <p><strong>SUPERVISOR:</strong> crea, edita y elimina categorías/subcategorías; también crea, edita y publica materiales.</p>
+            <p><strong>EDITOR:</strong> crea, edita y publica materiales; no modifica la cinta ni administra usuarios.</p>
+            <p><strong>ADMIN:</strong> conserva el control total y la eliminación definitiva de materiales.</p>
+          </div>
           <div className="flex justify-end">
             <button
               type="submit"
@@ -169,7 +201,7 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
               className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-lg text-sm font-semibold flex items-center gap-2 disabled:opacity-50"
             >
               {guardando && <Loader2 size={16} className="animate-spin" />}
-              Crear supervisor
+              Crear usuario
             </button>
           </div>
         </form>
@@ -180,7 +212,8 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
           <table className="w-full text-sm text-left">
             <thead className="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500">
               <tr>
-                <th className="px-5 py-4">Supervisor</th>
+                <th className="px-5 py-4">Usuario</th>
+                <th className="px-5 py-4">Rol</th>
                 <th className="px-5 py-4">Correo</th>
                 <th className="px-5 py-4">Estado</th>
                 <th className="px-5 py-4 text-center">Acciones</th>
@@ -189,16 +222,33 @@ export default function ClienteUsuarios({ usuariosIniciales }: Props) {
             <tbody className="divide-y divide-slate-100">
               {usuariosIniciales.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-12 text-center text-slate-500">
-                    Aún no hay supervisores creados.
+                  <td colSpan={5} className="px-5 py-12 text-center text-slate-500">
+                    Aún no hay supervisores ni editores creados.
                   </td>
                 </tr>
               ) : (
                 usuariosIniciales.map((u) => {
                   const nombre = `${u.nombre || ""} ${u.apellidos || ""}`.trim() || u.email;
+                  const esSupervisor = u.rol === "SUPERVISOR";
                   return (
                     <tr key={u.id} className="hover:bg-slate-50">
                       <td className="px-5 py-4 font-semibold text-slate-800">{nombre}</td>
+                      <td className="px-5 py-4">
+                        <select
+                          value={u.rol}
+                          disabled={procesandoId === u.id}
+                          onChange={(e) => handleCambiarRol(u.id, e.target.value as RolOperativo)}
+                          className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold border outline-none cursor-pointer ${
+                            esSupervisor
+                              ? "bg-orange-50 text-orange-700 border-orange-200"
+                              : "bg-blue-50 text-blue-700 border-blue-200"
+                          }`}
+                          title="Cambiar rol"
+                        >
+                          <option value="SUPERVISOR">SUPERVISOR</option>
+                          <option value="EDITOR">EDITOR</option>
+                        </select>
+                      </td>
                       <td className="px-5 py-4 text-slate-600">{u.email}</td>
                       <td className="px-5 py-4">
                         <span className="inline-flex px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
 import { prisma } from "@/lib/prisma";
-import { exigirAdmin, mensajeErrorPermisos } from "@/lib/auth";
+import { exigirGestorEstructura, mensajeErrorPermisos } from "@/lib/auth";
 import { subcategoriaSchema } from "@/lib/validations/subcategoria.schema";
 
 interface PrismaError extends Error {
@@ -48,7 +48,7 @@ export async function obtenerSubcategorias() {
 
 export async function crearSubcategoria(formData: FormData) {
   try {
-    await exigirAdmin();
+    await exigirGestorEstructura();
     const raw = {
       nombre: formData.get("nombre"),
       slug: formData.get("slug"),
@@ -77,7 +77,7 @@ export async function crearSubcategoria(formData: FormData) {
 
 export async function actualizarSubcategoria(id: string, formData: FormData) {
   try {
-    await exigirAdmin();
+    await exigirGestorEstructura();
     const raw = {
       nombre: formData.get("nombre"),
       slug: formData.get("slug"),
@@ -109,7 +109,7 @@ export async function actualizarSubcategoria(id: string, formData: FormData) {
 
 export async function eliminarSubcategoria(id: string) {
   try {
-    await exigirAdmin();
+    await exigirGestorEstructura();
     await prisma.subcategoria.delete({ where: { id } });
     // Limpia la caché global instantáneamente
     revalidatePath("/", "layout");

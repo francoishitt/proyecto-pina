@@ -20,15 +20,17 @@ export default async function DashboardPage() {
   if (!usuario) redirect("/login");
 
   const esAdmin = usuario.rol === "ADMIN";
+  const esSupervisor = usuario.rol === "SUPERVISOR";
+  const puedeEstructura = esAdmin || esSupervisor;
 
   const [totalCursos, publicados, borradores, totalCategorias, totalSubcategorias, totalSupervisores, ultimosCursos] =
     await Promise.all([
       prisma.curso.count(),
       prisma.curso.count({ where: { publicado: true } }),
       prisma.curso.count({ where: { publicado: false } }),
-      esAdmin ? prisma.categoria.count() : Promise.resolve(0),
-      esAdmin ? prisma.subcategoria.count() : Promise.resolve(0),
-      esAdmin ? prisma.usuario.count({ where: { rol: "SUPERVISOR" } }) : Promise.resolve(0),
+      puedeEstructura ? prisma.categoria.count() : Promise.resolve(0),
+      puedeEstructura ? prisma.subcategoria.count() : Promise.resolve(0),
+      esAdmin ? prisma.usuario.count({ where: { rol: { in: ["SUPERVISOR", "EDITOR"] } } }) : Promise.resolve(0),
       prisma.curso.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -76,7 +78,7 @@ export default async function DashboardPage() {
       texto: "Administrar subcategorías",
     },
     {
-      label: "Supervisores",
+      label: "Usuarios operativos",
       valor: totalSupervisores,
       icon: Users,
       href: "/admin/usuarios",
@@ -84,7 +86,12 @@ export default async function DashboardPage() {
     },
   ];
 
-  const tarjetas = esAdmin ? [...tarjetasBase, ...tarjetasAdmin] : tarjetasBase;
+  const tarjetasEstructura = tarjetasAdmin.filter((t) => t.label !== "Usuarios operativos");
+  const tarjetas = esAdmin
+    ? [...tarjetasBase, ...tarjetasAdmin]
+    : esSupervisor
+      ? [...tarjetasBase, ...tarjetasEstructura]
+      : tarjetasBase;
 
   return (
     <div className="space-y-8">
@@ -93,7 +100,9 @@ export default async function DashboardPage() {
         <p className="text-sm text-slate-500 mt-1">
           {esAdmin
             ? "Resumen general y administración de la plataforma."
-            : "Gestiona los materiales académicos que se muestran en la web."}
+            : esSupervisor
+              ? "Gestiona la cinta de categorías, subcategorías y materiales académicos."
+              : "Carga, edita y publica materiales académicos."}
         </p>
       </div>
 

@@ -11,7 +11,7 @@ export const revalidate = 0;
 export default async function SubcategoriasPage() {
   const usuario = await obtenerUsuarioSesion();
   if (!usuario) redirect("/login");
-  if (usuario.rol !== "ADMIN") redirect("/admin");
+  if (!["ADMIN", "SUPERVISOR"].includes(usuario.rol)) redirect("/admin");
 
   const [resSub, resCat] = await Promise.all([
     obtenerSubcategorias(),

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { obtenerUsuarioSesion } from "@/lib/auth";
-import { obtenerSupervisores } from "@/actions/usuario.action";
+import { obtenerUsuariosOperativos } from "@/actions/usuario.action";
 import ClienteUsuarios from "./components/ClienteUsuarios";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +11,7 @@ export default async function UsuariosPage() {
   if (!usuario) redirect("/login");
   if (usuario.rol !== "ADMIN") redirect("/admin");
 
-  const res = await obtenerSupervisores();
+  const res = await obtenerUsuariosOperativos();
 
   return (
     <ClienteUsuarios

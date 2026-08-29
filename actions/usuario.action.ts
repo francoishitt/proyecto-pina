@@ -15,19 +15,22 @@ const passwordSchema = z
   .regex(/[0-9]/, "Debe contener al menos un número.")
   .regex(/[^A-Za-z0-9]/, "Debe contener al menos un carácter especial.");
 
-const supervisorSchema = z.object({
+const rolOperativoSchema = z.enum(["SUPERVISOR", "EDITOR"]);
+
+const usuarioOperativoSchema = z.object({
   nombre: z.string().trim().min(2, "Ingresa el nombre."),
   apellidos: z.string().trim().min(2, "Ingresa los apellidos."),
   email: z.string().trim().toLowerCase().email("Ingresa un correo válido."),
   password: passwordSchema,
+  rol: rolOperativoSchema,
 });
 
-export async function obtenerSupervisores() {
+export async function obtenerUsuariosOperativos() {
   try {
     await exigirAdmin();
     const usuarios = await prisma.usuario.findMany({
-      where: { rol: "SUPERVISOR" },
-      orderBy: { createdAt: "desc" },
+      where: { rol: { in: ["SUPERVISOR", "EDITOR"] } },
+      orderBy: [{ rol: "asc" }, { createdAt: "desc" }],
       select: {
         id: true,
         nombre: true,
@@ -49,20 +52,21 @@ export async function obtenerSupervisores() {
   } catch (error: unknown) {
     const permiso = mensajeErrorPermisos(error);
     if (permiso) return { success: false, error: permiso };
-    console.error("obtenerSupervisores:", error);
-    return { success: false, error: "No se pudieron cargar los supervisores." };
+    console.error("obtenerUsuariosOperativos:", error);
+    return { success: false, error: "No se pudieron cargar los usuarios operativos." };
   }
 }
 
-export async function crearSupervisor(datos: {
+export async function crearUsuarioOperativo(datos: {
   nombre: string;
   apellidos: string;
   email: string;
   password: string;
+  rol: "SUPERVISOR" | "EDITOR";
 }) {
   try {
     await exigirAdmin();
-    const validado = supervisorSchema.parse(datos);
+    const validado = usuarioOperativoSchema.parse(datos);
 
     const existente = await prisma.usuario.findUnique({
       where: { email: validado.email },
@@ -80,7 +84,7 @@ export async function crearSupervisor(datos: {
         apellidos: validado.apellidos,
         email: validado.email,
         password,
-        rol: "SUPERVISOR",
+        rol: validado.rol,
         emailVerificado: true,
         otp: null,
         otpExpires: null,
@@ -95,22 +99,55 @@ export async function crearSupervisor(datos: {
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues[0]?.message || "Datos inválidos." };
     }
-    console.error("crearSupervisor:", error);
-    return { success: false, error: "No se pudo crear el supervisor." };
+    console.error("crearUsuarioOperativo:", error);
+    return { success: false, error: "No se pudo crear el usuario." };
   }
 }
 
-export async function cambiarPasswordSupervisor(id: string, nuevaPassword: string) {
+
+export async function cambiarRolUsuarioOperativo(id: string, rol: "SUPERVISOR" | "EDITOR") {
+  try {
+    await exigirAdmin();
+    const rolValidado = rolOperativoSchema.parse(rol);
+
+    const usuario = await prisma.usuario.findFirst({
+      where: { id, rol: { in: ["SUPERVISOR", "EDITOR"] } },
+      select: { id: true },
+    });
+    if (!usuario) {
+      return { success: false, error: "Usuario no encontrado." };
+    }
+
+    await prisma.usuario.update({
+      where: { id },
+      data: { rol: rolValidado },
+    });
+
+    revalidatePath("/admin/usuarios");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (error: unknown) {
+    const permiso = mensajeErrorPermisos(error);
+    if (permiso) return { success: false, error: permiso };
+    if (error instanceof z.ZodError) {
+      return { success: false, error: "Rol inválido." };
+    }
+    console.error("cambiarRolUsuarioOperativo:", error);
+    return { success: false, error: "No se pudo cambiar el rol." };
+  }
+}
+
+export async function cambiarPasswordUsuarioOperativo(id: string, nuevaPassword: string) {
   try {
     await exigirAdmin();
     const passwordValidada = passwordSchema.parse(nuevaPassword);
 
-    const supervisor = await prisma.usuario.findFirst({
-      where: { id, rol: "SUPERVISOR" },
+    const usuario = await prisma.usuario.findFirst({
+      where: { id, rol: { in: ["SUPERVISOR", "EDITOR"] } },
       select: { id: true },
     });
-    if (!supervisor) {
-      return { success: false, error: "Supervisor no encontrado." };
+    if (!usuario) {
+      return { success: false, error: "Usuario no encontrado." };
     }
 
     const password = await bcrypt.hash(passwordValidada, 10);
@@ -126,21 +163,21 @@ export async function cambiarPasswordSupervisor(id: string, nuevaPassword: strin
     if (error instanceof z.ZodError) {
       return { success: false, error: error.issues[0]?.message || "Contraseña inválida." };
     }
-    console.error("cambiarPasswordSupervisor:", error);
+    console.error("cambiarPasswordUsuarioOperativo:", error);
     return { success: false, error: "No se pudo cambiar la contraseña." };
   }
 }
 
-export async function eliminarSupervisor(id: string) {
+export async function eliminarUsuarioOperativo(id: string) {
   try {
     await exigirAdmin();
 
-    const supervisor = await prisma.usuario.findFirst({
-      where: { id, rol: "SUPERVISOR" },
+    const usuario = await prisma.usuario.findFirst({
+      where: { id, rol: { in: ["SUPERVISOR", "EDITOR"] } },
       select: { id: true },
     });
-    if (!supervisor) {
-      return { success: false, error: "Supervisor no encontrado." };
+    if (!usuario) {
+      return { success: false, error: "Usuario no encontrado." };
     }
 
     await prisma.usuario.delete({ where: { id } });
@@ -149,7 +186,7 @@ export async function eliminarSupervisor(id: string) {
   } catch (error: unknown) {
     const permiso = mensajeErrorPermisos(error);
     if (permiso) return { success: false, error: permiso };
-    console.error("eliminarSupervisor:", error);
-    return { success: false, error: "No se pudo eliminar el supervisor." };
+    console.error("eliminarUsuarioOperativo:", error);
+    return { success: false, error: "No se pudo eliminar el acceso." };
   }
 }

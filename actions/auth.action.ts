@@ -133,7 +133,7 @@ export async function iniciarSesion(datos: { correo: string; password: string })
       return { success: false, error: "Correo o contraseña incorrectos." };
     }
 
-    if (!usuario.emailVerificado || !["ADMIN", "SUPERVISOR"].includes(usuario.rol)) {
+    if (!usuario.emailVerificado || !["ADMIN", "SUPERVISOR", "EDITOR"].includes(usuario.rol)) {
       return { success: false, error: "Esta cuenta no tiene acceso al panel administrativo." };
     }
 

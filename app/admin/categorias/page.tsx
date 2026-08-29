@@ -10,7 +10,7 @@ export const revalidate = 0;
 export default async function CategoriasPage() {
   const usuario = await obtenerUsuarioSesion();
   if (!usuario) redirect("/login");
-  if (usuario.rol !== "ADMIN") redirect("/admin");
+  if (!["ADMIN", "SUPERVISOR"].includes(usuario.rol)) redirect("/admin");
 
   const res = await obtenerCategorias();
   const categorias: CategoriaConRelaciones[] = res.success ? res.data ?? [] : [];
