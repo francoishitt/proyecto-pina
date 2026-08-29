@@ -15,15 +15,15 @@ const geistMono = Geist_Mono({
 // Configuración de SEO Global para Google y Redes Sociales
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://proyectopiña.com"),
-  title: "Proyecto Piña | Academia Pre-Universitaria en Loreto",
+  title: "Academias Proyecto Piña | Preparación Preuniversitaria y Pre Policial en Loreto",
   description: "Descarga materiales gratuitos, PDFs, prácticas y simulacros tipo examen de admisión. Prepárate con la mejor academia de la Amazonía peruana.",
   keywords: ["academia preuniversitaria", "Iquitos", "Loreto", "exámenes de admisión", "UNAP", "cursos gratis", "Proyecto Piña"],
-  authors: [{ name: "Proyecto Piña" }],
+  authors: [{ name: "Academias Proyecto Piña" }],
   openGraph: {
-    title: "Proyecto Piña | Academia Pre-Universitaria",
+    title: "Academias Proyecto Piña | Preparación Preuniversitaria y Pre Policial",
     description: "Material preuniversitario gratuito y actualizado para asegurar tu ingreso a la universidad.",
     url: "https://proyectopiña.com",
-    siteName: "Proyecto Piña",
+    siteName: "Academias Proyecto Piña",
     images: [
       {
         url: "/logo.png",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Proyecto Piña | Academia Pre-Universitaria",
+    title: "Academias Proyecto Piña | Preparación Preuniversitaria y Pre Policial",
     description: "Descarga materiales preuniversitarios gratuitos en Iquitos.",
     images: ["/logo.png"],
   },

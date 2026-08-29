@@ -59,13 +59,13 @@ export default function Hero() {
         {/* Etiqueta superior */}
         <div className="animate-fade-in-up">
           <span className="inline-block py-1.5 px-4 rounded-full border border-yellow-500/40 text-yellow-400 text-xs md:text-sm font-semibold tracking-wide uppercase mb-6 backdrop-blur-md bg-black/30 shadow-sm">
-            Academia Pre-Universitaria
+            Preparación Preuniversitaria y Pre Policial
           </span>
         </div>
 
         {/* Título Principal */}
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold text-white mb-6 leading-tight font-heading animate-fade-in-up delay-100 drop-shadow-md">
-          Academia <span className="text-yellow-400">Proyecto Piña</span>
+          ACADEMIAS <span className="text-yellow-400">PROYECTO PIÑA</span>
         </h1>
 
         {/* Párrafo Descriptivo */}

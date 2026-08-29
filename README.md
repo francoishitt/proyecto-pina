@@ -1,3 +1,5 @@
+> Versión actual: **V1.4.6**
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -37,3 +39,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## V1.4 - configuración y redes
 Antes de desplegar V1.4 ejecute `MIGRACION_V1_4.sql` en phpMyAdmin de la base activa. Las credenciales OAuth de TikTok/Instagram se configuran exclusivamente como variables de entorno en Hostinger; nunca se guardan en GitHub.
+
+
+## V1.4.6 - cambio de cuentas sociales
+Desde Administración → Videos y redes, TikTok e Instagram pueden desconectarse o cambiarse por otra cuenta sin modificar la base de datos ni el código.
