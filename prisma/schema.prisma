@@ -37,6 +37,8 @@ model Categoria {
   nombre        String         @unique
   slug          String         @unique
   descripcion   String?
+  orden         Int            @default(0)
+  visible       Boolean        @default(true)
   
   subcategorias Subcategoria[]
   cursos        Curso[]
@@ -51,6 +53,8 @@ model Subcategoria {
   slug        String    @unique
   
   categoriaId String
+  orden       Int       @default(0)
+  visible     Boolean   @default(true)
   // Protege la categoría padre de borrados accidentales
   categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
   
@@ -106,14 +110,40 @@ model ConfiguracionWeb {
   logoUrl            String?
   
   whatsapp           String   // Para el botón flotante
+  whatsappMensaje    String?  @db.Text
+  telefono           String?
+  direccion          String?  @db.Text
   emailContacto      String
   
   facebook           String?
   instagram          String?
   tiktok             String?
+  youtube            String?
+
+  mostrarVideosInicio Boolean @default(true)
+  cantidadVideosInicio Int     @default(6)
   
   heroTitulo         String   // Ej: "Ingresa a la Universidad con nuestros cursos"
   heroSubtitulo      String
   
   updatedAt          DateTime @updatedAt
+}
+
+// =====================================================================
+// 5. CONEXIONES SOCIALES (tokens solo servidor)
+// =====================================================================
+model ConexionSocial {
+  id              String   @id @default(uuid())
+  plataforma      String   @unique // TIKTOK | INSTAGRAM
+  accessToken     String   @db.Text
+  refreshToken    String?  @db.Text
+  tokenExpiresAt  DateTime?
+  externalUserId  String?
+  username        String?
+  displayName     String?
+  profileUrl      String?  @db.Text
+  avatarUrl       String?  @db.Text
+  scope           String?  @db.Text
+  connectedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

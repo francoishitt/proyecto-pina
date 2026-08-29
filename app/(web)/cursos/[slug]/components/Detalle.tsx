@@ -33,10 +33,12 @@ interface RelacionadoData {
 
 export default function Detalle({ 
   curso, 
-  relacionados 
+  relacionados, whatsapp, whatsappMensaje
 }: { 
   curso: CursoData, 
-  relacionados: RelacionadoData[] 
+  relacionados: RelacionadoData[],
+  whatsapp: string,
+  whatsappMensaje?: string | null
 }) {
   
   const todasLasImagenes: string[] = [];
@@ -51,8 +53,8 @@ export default function Detalle({
   const imagenAMostrar = imgActiva;
   const isImageLoading = imagenAMostrar !== imgCargada;
 
-  const numeroWa = "51925030648"; 
-  const msjWa = encodeURIComponent(`Hola Proyecto Piña, deseo solicitar información sobre el curso:\n✔️ ${curso.titulo}`);
+  const numeroWa = whatsapp || "51925030648"; 
+  const msjWa = encodeURIComponent(`${whatsappMensaje || "Hola Proyecto Piña, deseo solicitar información."}\n✔️ ${curso.titulo}`);
   const urlWhatsapp = `https://api.whatsapp.com/send?phone=${numeroWa}&text=${msjWa}`;
 
   // =====================================================================

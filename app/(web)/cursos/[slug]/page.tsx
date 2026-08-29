@@ -2,8 +2,10 @@ import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
 import Detalle from './components/Detalle';
+import { obtenerConfiguracion } from '@/actions/configuracion.action';
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface CursoData {
   id: string;
@@ -117,11 +119,7 @@ export async function generateMetadata(props: PageProps): Promise<Metadata> {
 
 export default async function CursoDetallePage(props: PageProps) {
   const resolvedParams = await props.params;
-  const { curso, relacionados } = await getCursoData(resolvedParams.slug);
-
-  if (!curso) {
-    notFound(); 
-  }
-
-  return <Detalle curso={curso} relacionados={relacionados} />;
+  const [{ curso, relacionados }, cfg] = await Promise.all([getCursoData(resolvedParams.slug), obtenerConfiguracion()]);
+  if (!curso) notFound();
+  return <Detalle curso={curso} relacionados={relacionados} whatsapp={cfg.data.whatsapp} whatsappMensaje={cfg.data.whatsappMensaje} />;
 }

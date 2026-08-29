@@ -29,9 +29,9 @@ export default function Tabla({
               <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs">
                 Categoría
               </th>
-              <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">
-                Cursos
-              </th>
+              <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">Orden</th>
+              <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">Estado</th>
+              <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">Cursos</th>
               <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">
                 Ver
               </th>
@@ -69,9 +69,9 @@ export default function Tabla({
                 <td className="hidden sm:table-cell px-5 py-4 text-slate-700 font-medium">
                   {sub.categoria?.nombre ?? "—"}
                 </td>
-                <td className="hidden sm:table-cell px-5 py-4 text-center font-bold text-slate-700">
-                  {sub._count?.cursos ?? 0}
-                </td>
+                <td className="hidden sm:table-cell px-5 py-4 text-center">{sub.orden}</td>
+                <td className="hidden sm:table-cell px-5 py-4 text-center"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${sub.visible ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{sub.visible ? "Visible" : "Oculta"}</span></td>
+                <td className="hidden sm:table-cell px-5 py-4 text-center font-bold text-slate-700">{sub._count?.cursos ?? 0}</td>
                 <td className="hidden sm:table-cell px-5 py-4 text-center">
                   <button
                     onClick={() => onVerDetalle(sub)}

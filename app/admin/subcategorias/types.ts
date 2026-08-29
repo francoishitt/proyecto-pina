@@ -8,6 +8,8 @@ export interface SubcategoriaConRelaciones {
   nombre: string;
   slug: string;
   categoriaId: string;
+  orden: number;
+  visible: boolean;
   categoria: {
     id: string;
     nombre: string;

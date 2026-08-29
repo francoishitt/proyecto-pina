@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { Menu, Search, Home, BookOpen, Phone, X, ChevronDown, ChevronRight, ChevronLeft, ArrowLeft, Loader2 } from "lucide-react";
+import { Menu, Search, Home, BookOpen, Phone, X, ChevronDown, ChevronRight, ChevronLeft, ArrowLeft, Loader2, PlaySquare } from "lucide-react";
 import { buscarCursosRapido } from "@/actions/curso.action";
 
 interface Subcategoria { id: string; nombre: string; }
@@ -40,6 +40,7 @@ function NavbarInner({ categorias }: NavbarProps) {
   const navLinks = [
     { name: "Inicio", href: "/", icon: Home },
     { name: "Cursos", href: "/cursos", icon: BookOpen },
+    { name: "Videos", href: "/videos", icon: PlaySquare },
     { name: "Contacto", href: "/contacto", icon: Phone },
   ];
 

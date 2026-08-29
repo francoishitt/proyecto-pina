@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { Headset, Presentation, Plus } from "lucide-react";
 
-export default function Modalidades() {
+export default function Modalidades({ direccion }: { direccion?: string | null }) {
   const [isVisible, setIsVisible] = useState(false);
   const seccionRef = useRef<HTMLElement>(null);
 
@@ -83,8 +83,7 @@ export default function Modalidades() {
                   Presencial
                 </h3>
                 <p className="text-sm md:text-base text-blue-100 font-medium leading-snug">
-                  Alférez West # 429 <br />
-                  Iquitos, Perú 16001
+                  {direccion || "Iquitos, Loreto, Perú"}
                 </p>
               </div>
             </div>

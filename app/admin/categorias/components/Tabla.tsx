@@ -17,6 +17,8 @@ export default function Tabla({ categorias, onVerDetalle, onEditar, onEliminar }
             <tr>
               <th className="px-5 py-4 text-slate-400 font-semibold uppercase text-xs">Nombre</th>
               <th className="hidden md:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs">Slug</th>
+              <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">Orden</th>
+              <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">Estado</th>
               <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">Subcategorías</th>
               <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">Cursos</th>
               <th className="hidden sm:table-cell px-5 py-4 text-slate-400 font-semibold uppercase text-xs text-center">Ver</th>
@@ -45,9 +47,9 @@ export default function Tabla({ categorias, onVerDetalle, onEditar, onEliminar }
                 <td className="hidden md:table-cell px-5 py-4 font-mono text-xs text-slate-500">
                   {cat.slug}
                 </td>
-                <td className="hidden sm:table-cell px-5 py-4 text-center font-bold text-slate-700">
-                  {cat._count?.subcategorias ?? 0}
-                </td>
+                <td className="hidden sm:table-cell px-5 py-4 text-center">{cat.orden}</td>
+                <td className="hidden sm:table-cell px-5 py-4 text-center"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${cat.visible ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{cat.visible ? "Visible" : "Oculta"}</span></td>
+                <td className="hidden sm:table-cell px-5 py-4 text-center font-bold text-slate-700">{cat._count?.subcategorias ?? 0}</td>
                 <td className="hidden sm:table-cell px-5 py-4 text-center font-bold text-slate-700">
                   {cat._count?.cursos ?? 0}
                 </td>

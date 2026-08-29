@@ -18,6 +18,8 @@ import {
   LogOut,
   User as UserIcon,
   Users,
+  Settings,
+  Video,
 } from "lucide-react";
 import { cerrarSesion } from "@/actions/auth.action";
 
@@ -88,6 +90,8 @@ export default function AdminClientLayout({
     { href: "/admin/cursos", label: "Materiales", icon: BookOpen, visible: true },
     { href: "/admin/categorias", label: "Categorías", icon: FolderTree, visible: puedeEstructura },
     { href: "/admin/subcategorias", label: "Subcategorías", icon: ListTree, visible: puedeEstructura },
+    { href: "/admin/configuracion", label: "Configuración web", icon: Settings, visible: puedeEstructura },
+    { href: "/admin/videos", label: "Videos y redes", icon: Video, visible: puedeEstructura },
     { href: "/admin/usuarios", label: "Usuarios", icon: Users, visible: esAdmin },
     { href: "/admin/perfil", label: "Perfil", icon: CircleUser, visible: true },
   ].filter((link) => link.visible);

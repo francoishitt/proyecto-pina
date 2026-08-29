@@ -8,19 +8,15 @@ export const dynamic = "force-dynamic"; // Consulta la BD solo en tiempo de ejec
 export default async function CursosPage() {
   const [cursosData, categoriasData, subcategoriasData] = await Promise.all([
     prisma.curso.findMany({
-      where: { publicado: true },
+      where: { publicado: true, categoria: { visible: true } },
       include: {
         categoria: { select: { id: true, nombre: true } },
         subcategoria: { select: { id: true, nombre: true } },
       },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.categoria.findMany({
-      orderBy: { nombre: "asc" },
-    }),
-    prisma.subcategoria.findMany({
-      orderBy: { nombre: "asc" },
-    }),
+    prisma.categoria.findMany({ where: { visible: true }, orderBy: [{ orden: "asc" }, { nombre: "asc" }] }),
+    prisma.subcategoria.findMany({ where: { visible: true }, orderBy: [{ orden: "asc" }, { nombre: "asc" }] }),
   ]);
 
   return (

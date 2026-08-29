@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Send, Mail, Loader2 } from 'lucide-react';
 
-export default function FormularioContacto() {
+export default function FormularioContacto({ whatsapp, email }: { whatsapp: string; email: string }) {
   const [metodo, setMetodo] = useState<'whatsapp' | 'correo'>('whatsapp');
   const [enviando, setEnviando] = useState(false);
 
@@ -20,16 +20,14 @@ export default function FormularioContacto() {
       // Envío a WhatsApp
       setTimeout(() => {
         const textoWa = encodeURIComponent(`Hola, mi nombre es ${nombre}. ${mensaje}`);
-        window.open(`https://wa.me/51925030648?text=${textoWa}`, '_blank');
+        window.open(`https://wa.me/${whatsapp}?text=${textoWa}`, '_blank');
         setEnviando(false);
       }, 500);
     } else {
-      // Simulación de envío de correo
-      setTimeout(() => {
-        alert(`Mensaje enviado por correo.\nNombre: ${nombre}\nCel: ${numero}`);
-        setNombre(''); setNumero(''); setMensaje('');
-        setEnviando(false);
-      }, 1500);
+      const asunto = encodeURIComponent(`Consulta web de ${nombre}`);
+      const cuerpo = encodeURIComponent(`Nombre: ${nombre}\nTeléfono: ${numero}\n\n${mensaje}`);
+      window.location.href = `mailto:${email}?subject=${asunto}&body=${cuerpo}`;
+      setEnviando(false);
     }
   };
 

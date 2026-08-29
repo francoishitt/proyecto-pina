@@ -14,6 +14,8 @@ export interface CategoriaConRelaciones {
   nombre: string;
   slug: string;
   descripcion?: string | null;
+  orden: number;
+  visible: boolean;
   createdAt?: string | Date;
   updatedAt?: string | Date;
   _count?: {

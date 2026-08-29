@@ -34,3 +34,6 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## V1.4 - configuración y redes
+Antes de desplegar V1.4 ejecute `MIGRACION_V1_4.sql` en phpMyAdmin de la base activa. Las credenciales OAuth de TikTok/Instagram se configuran exclusivamente como variables de entorno en Hostinger; nunca se guardan en GitHub.
