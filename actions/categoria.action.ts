@@ -2,12 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { ZodError } from "zod";
+
 import { prisma } from "@/lib/prisma";
 import {
   exigirAdmin,
   exigirGestorEstructura,
   mensajeErrorPermisos,
 } from "@/lib/auth";
+
 import { categoriaSchema } from "@/lib/validations/categoria.schema";
 
 // =============================================================================
@@ -33,6 +35,7 @@ const limpiar = () => {
   revalidatePath("/", "layout");
   revalidatePath("/cursos");
   revalidatePath("/admin/categorias");
+  revalidatePath("/admin/subcategorias");
 };
 
 // =============================================================================
@@ -41,56 +44,57 @@ const limpiar = () => {
 
 export async function obtenerCategorias() {
   try {
-    const data = await prisma.categoria.findMany({
-      orderBy: [
-        {
-          orden: "asc",
-        },
-        {
-          nombre: "asc",
-        },
-      ],
-
-      include: {
-        _count: {
-          select: {
-            subcategorias: true,
-            cursos: true,
+    const data =
+      await prisma.categoria.findMany({
+        orderBy: [
+          {
+            orden: "asc",
           },
-        },
+          {
+            nombre: "asc",
+          },
+        ],
 
-        subcategorias: {
-          orderBy: [
-            {
-              orden: "asc",
+        include: {
+          _count: {
+            select: {
+              subcategorias: true,
+              cursos: true,
             },
-            {
-              nombre: "asc",
-            },
-          ],
+          },
 
-          select: {
-            id: true,
-            nombre: true,
-            orden: true,
-            visible: true,
+          subcategorias: {
+            orderBy: [
+              {
+                orden: "asc",
+              },
+              {
+                nombre: "asc",
+              },
+            ],
 
-            _count: {
-              select: {
-                cursos: true,
+            select: {
+              id: true,
+              nombre: true,
+              orden: true,
+              visible: true,
+
+              _count: {
+                select: {
+                  cursos: true,
+                },
               },
             },
           },
-        },
 
-        cursos: {
-          select: {
-            id: true,
-            titulo: true,
+          cursos: {
+            select: {
+              id: true,
+              titulo: true,
+            },
           },
         },
-      },
-    });
+      });
 
     return {
       success: true,
@@ -118,7 +122,8 @@ function raw(fd: FormData) {
   return {
     nombre: fd.get("nombre"),
     slug: fd.get("slug"),
-    descripcion: fd.get("descripcion"),
+    descripcion:
+      fd.get("descripcion"),
 
     orden: Number(
       fd.get("orden") || 0
@@ -289,6 +294,67 @@ export async function eliminarCategoria(
   try {
     await exigirAdmin();
 
+    // -------------------------------------------------------------------------
+    // Primero comprobamos la estructura asociada.
+    //
+    // Una categoría NO puede eliminarse si todavía contiene:
+    // - subcategorías;
+    // - materiales asociados directamente.
+    //
+    // Así evitamos depender únicamente del error P2003 de Prisma.
+    // -------------------------------------------------------------------------
+
+    const categoria =
+      await prisma.categoria.findUnique({
+        where: {
+          id,
+        },
+
+        select: {
+          id: true,
+          nombre: true,
+
+          _count: {
+            select: {
+              subcategorias: true,
+              cursos: true,
+            },
+          },
+        },
+      });
+
+    if (!categoria) {
+      return {
+        success: false,
+        error:
+          "La categoría no existe.",
+      };
+    }
+
+    if (
+      categoria._count.subcategorias > 0
+    ) {
+      return {
+        success: false,
+        error:
+          `No puedes eliminar la categoría "${categoria.nombre}" ` +
+          `porque contiene ${categoria._count.subcategorias} subcategoría(s). ` +
+          "Primero debes reasignar o eliminar esas subcategorías.",
+      };
+    }
+
+    if (
+      categoria._count.cursos > 0
+    ) {
+      return {
+        success: false,
+        error:
+          `No puedes eliminar la categoría "${categoria.nombre}" ` +
+          `porque tiene ${categoria._count.cursos} material(es) asociado(s). ` +
+          "Primero debes reasignar esos materiales.",
+      };
+    }
+
     await prisma.categoria.delete({
       where: {
         id,
@@ -311,6 +377,7 @@ export async function eliminarCategoria(
       };
     }
 
+    // Respaldo adicional de integridad referencial.
     if (
       isPrismaError(error) &&
       error.code === "P2003"
@@ -318,7 +385,7 @@ export async function eliminarCategoria(
       return {
         success: false,
         error:
-          "Primero elimina o reasigna las subcategorías y materiales asociados.",
+          "La categoría todavía tiene información asociada y no puede eliminarse.",
       };
     }
 
@@ -345,14 +412,8 @@ export async function moverCategoria(
   direccion: "SUBIR" | "BAJAR"
 ) {
   try {
-    // ADMIN y SUPERVISOR pueden
-    // cambiar únicamente el orden.
+    // ADMIN y SUPERVISOR pueden modificar únicamente el orden.
     await exigirGestorEstructura();
-
-    // -------------------------------------------------------------------------
-    // Cargamos todas las categorías
-    // respetando el orden actual.
-    // -------------------------------------------------------------------------
 
     const categorias =
       await prisma.categoria.findMany({
@@ -391,11 +452,7 @@ export async function moverCategoria(
         ? indiceActual - 1
         : indiceActual + 1;
 
-    // -------------------------------------------------------------------------
-    // Ya está arriba o abajo del todo.
-    // No hacemos ningún cambio.
-    // -------------------------------------------------------------------------
-
+    // Ya se encuentra en uno de los extremos.
     if (
       indiceDestino < 0 ||
       indiceDestino >=
@@ -405,10 +462,6 @@ export async function moverCategoria(
         success: true,
       };
     }
-
-    // -------------------------------------------------------------------------
-    // Intercambiamos posiciones.
-    // -------------------------------------------------------------------------
 
     const categoriasOrdenadas = [
       ...categorias,
@@ -430,14 +483,8 @@ export async function moverCategoria(
       ],
     ];
 
-    // -------------------------------------------------------------------------
-    // Renumeramos TODA la lista:
-    //
-    // 1, 2, 3, 4, 5...
-    //
-    // Esto evita órdenes repetidos,
-    // huecos o inconsistencias.
-    // -------------------------------------------------------------------------
+    // Renumeramos toda la lista 1, 2, 3...
+    // para impedir órdenes repetidos o huecos.
 
     await prisma.$transaction(
       categoriasOrdenadas.map(
