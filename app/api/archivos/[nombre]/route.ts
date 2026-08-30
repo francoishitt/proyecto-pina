@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import path from "path";
-import fs from "fs";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { r2, R2_BUCKET } from "../../../../lib/r2";
 
 export async function GET(
   _request: NextRequest,
@@ -11,31 +12,39 @@ export async function GET(
     const fileName = params.nombre;
 
     // Solo admitimos nombres simples generados por el sistema.
-    // Esto impide intentar salir de storage_pina con rutas manipuladas.
-    if (!fileName || fileName !== path.basename(fileName) || fileName.includes("..")) {
+    if (
+      !fileName ||
+      fileName !== path.basename(fileName) ||
+      fileName.includes("..")
+    ) {
       return new NextResponse("Archivo no válido.", { status: 400 });
     }
 
-    const projectRoot = process.cwd();
-    const persistentDir = path.resolve(projectRoot, "..", "storage_pina");
-    const filePath = path.resolve(persistentDir, fileName);
+    const resultado = await r2.send(
+      new GetObjectCommand({
+        Bucket: R2_BUCKET,
+        Key: fileName,
+      })
+    );
 
-    if (!filePath.startsWith(`${persistentDir}${path.sep}`)) {
-      return new NextResponse("Archivo no válido.", { status: 400 });
-    }
-
-    if (!fs.existsSync(filePath)) {
+    if (!resultado.Body) {
       return new NextResponse("Archivo no encontrado.", { status: 404 });
     }
 
-    const fileBuffer = fs.readFileSync(filePath);
+    const bytes = await resultado.Body.transformToByteArray();
+    const fileBuffer = Buffer.from(bytes);
+
     const ext = path.extname(fileName).toLowerCase();
 
-    let contentType = "application/octet-stream";
-    if (ext === ".pdf") contentType = "application/pdf";
-    if (ext === ".jpg" || ext === ".jpeg") contentType = "image/jpeg";
-    if (ext === ".png") contentType = "image/png";
-    if (ext === ".webp") contentType = "image/webp";
+    let contentType =
+      resultado.ContentType || "application/octet-stream";
+
+    if (!resultado.ContentType) {
+      if (ext === ".pdf") contentType = "application/pdf";
+      if (ext === ".jpg" || ext === ".jpeg") contentType = "image/jpeg";
+      if (ext === ".png") contentType = "image/png";
+      if (ext === ".webp") contentType = "image/webp";
+    }
 
     return new NextResponse(fileBuffer, {
       headers: {
@@ -44,8 +53,19 @@ export async function GET(
         "X-Content-Type-Options": "nosniff",
       },
     });
-  } catch (error) {
-    console.error("Error al servir archivo:", error);
-    return new NextResponse("Error de servidor.", { status: 500 });
+  } catch (error: any) {
+    if (
+      error?.name === "NoSuchKey" ||
+      error?.name === "NotFound" ||
+      error?.$metadata?.httpStatusCode === 404
+    ) {
+      return new NextResponse("Archivo no encontrado.", { status: 404 });
+    }
+
+    console.error("Error al servir archivo desde R2:", error);
+
+    return new NextResponse("Error de servidor.", {
+      status: 500,
+    });
   }
 }
