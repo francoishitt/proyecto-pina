@@ -23,11 +23,6 @@ export default async function Page() {
     configuracion.direccion ||
     "Iquitos, Loreto, Perú";
 
-  const map =
-    `https://maps.google.com/maps?q=${encodeURIComponent(
-      direccion
-    )}&t=&z=16&ie=UTF8&iwloc=&output=embed`;
-
   return (
     <main className="bg-slate-50 min-h-screen py-12">
       <div className="max-w-[1200px] mx-auto px-4">
@@ -64,47 +59,44 @@ export default async function Page() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div className="h-[320px] rounded-2xl overflow-hidden border relative">
-                <span className="absolute z-10 bg-white m-3 p-2 rounded shadow-sm">
+            <div className="bg-white p-6 md:p-8 rounded-2xl border">
+              <div className="flex items-start gap-4">
+                <div className="shrink-0 w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
                   <MapPin
-                    size={16}
-                    className="inline mr-1"
+                    size={24}
+                    className="text-orange-600"
                   />
-
-                  {direccion}
-                </span>
-
-                <iframe
-                  src={map}
-                  className="w-full h-full"
-                  title="Ubicación Proyecto Piña"
-                  loading="lazy"
-                />
-              </div>
-
-              {configuracion.googleMapsUrl && (
-                <div className="flex justify-end">
-                  <a
-                    href={
-                      configuracion.googleMapsUrl
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 bg-blue-950 hover:bg-blue-900 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition"
-                  >
-                    <MapPin
-                      size={17}
-                    />
-
-                    Ver en Google Maps
-
-                    <ExternalLink
-                      size={15}
-                    />
-                  </a>
                 </div>
-              )}
+
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg text-blue-950 mb-2">
+                    Nuestra ubicación
+                  </h3>
+
+                  <p className="text-slate-600 mb-5">
+                    {direccion}
+                  </p>
+
+                  {configuracion.googleMapsUrl && (
+                    <a
+                      href={
+                        configuracion.googleMapsUrl
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 bg-blue-950 hover:bg-blue-900 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition"
+                    >
+                      <MapPin size={17} />
+
+                      Ver en Google Maps
+
+                      <ExternalLink
+                        size={15}
+                      />
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
