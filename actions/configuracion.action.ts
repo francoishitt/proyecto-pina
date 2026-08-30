@@ -34,6 +34,8 @@ const CONFIG_DEFAULT = {
   direccion:
     "Iquitos, Loreto, Perú",
 
+  googleMapsUrl: null,
+
   emailContacto:
     "informes@proyectopina.com",
 
@@ -156,6 +158,13 @@ export async function guardarConfiguracion(
             ""
         ).trim() ||
         null,
+        googleMapsUrl:
+       String(
+         datos.googleMapsUrl ||
+           ""
+        ).trim() ||
+        null,
+
 
       emailContacto:
         String(

@@ -109,10 +109,11 @@ model ConfiguracionWeb {
   descripcionSeo     String?  @db.Text
   logoUrl            String?
   
-  whatsapp           String   // Para el botón flotante
+  whatsapp           String
   whatsappMensaje    String?  @db.Text
   telefono           String?
   direccion          String?  @db.Text
+  googleMapsUrl      String?  @db.Text
   emailContacto      String
   
   facebook           String?
