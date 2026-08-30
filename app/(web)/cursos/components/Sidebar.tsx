@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -57,9 +58,13 @@ export default function Sidebar({
   const searchParams =
     useSearchParams();
 
-  // ---------------------------------------------------------------------------
-  // Obtiene únicamente las subcategorías pertenecientes a una categoría.
-  // ---------------------------------------------------------------------------
+  const categoriaRefs =
+    useRef<
+      Record<
+        string,
+        HTMLDivElement | null
+      >
+    >({});
 
   const obtenerSubcategorias =
     (
@@ -71,14 +76,19 @@ export default function Sidebar({
           categoriaId
       );
 
-  // ---------------------------------------------------------------------------
-  // Seleccionar una categoría:
-  //
-  // 1. Selecciona la categoría.
-  // 2. Abre sus subcategorías.
-  // 3. Si tiene subcategorías, selecciona automáticamente la primera.
-  // 4. Si no tiene, deja subcategoriaSel vacío.
-  // ---------------------------------------------------------------------------
+  const llevarCategoriaAlInicio =
+    (
+      categoriaId: string
+    ) => {
+      setTimeout(() => {
+        categoriaRefs.current[
+          categoriaId
+        ]?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }, 50);
+    };
 
   const seleccionarCategoria =
     (
@@ -99,17 +109,15 @@ export default function Sidebar({
           : ""
       );
 
-      // Dejamos abierta únicamente
-      // la categoría seleccionada.
       setAbiertas({
         [categoriaId]:
           true,
       });
-    };
 
-  // ---------------------------------------------------------------------------
-  // Selecciones que llegan mediante URL.
-  // ---------------------------------------------------------------------------
+      llevarCategoriaAlInicio(
+        categoriaId
+      );
+    };
 
   useEffect(() => {
     const catUrl =
@@ -124,11 +132,6 @@ export default function Sidebar({
 
     const timer =
       setTimeout(() => {
-        // ---------------------------------------------------------------
-        // Si viene una subcategoría específica en la URL,
-        // respetamos esa selección.
-        // ---------------------------------------------------------------
-
         if (subUrl) {
           const subObj =
             subcategorias.find(
@@ -150,15 +153,14 @@ export default function Sidebar({
               [subObj.categoriaId]:
                 true,
             });
+
+            llevarCategoriaAlInicio(
+              subObj.categoriaId
+            );
           }
 
           return;
         }
-
-        // ---------------------------------------------------------------
-        // Si viene solamente una categoría,
-        // seleccionamos automáticamente su primera subcategoría.
-        // ---------------------------------------------------------------
 
         if (catUrl) {
           const categoriaExiste =
@@ -194,6 +196,10 @@ export default function Sidebar({
               [catUrl]:
                 true,
             });
+
+            llevarCategoriaAlInicio(
+              catUrl
+            );
           }
         }
       }, 0);
@@ -209,13 +215,6 @@ export default function Sidebar({
     setCategoriaSel,
     setSubcategoriaSel,
   ]);
-
-  // ---------------------------------------------------------------------------
-  // Flecha del acordeón.
-  //
-  // La flecha solamente abre/cierra visualmente las subcategorías.
-  // No cambia el filtro seleccionado.
-  // ---------------------------------------------------------------------------
 
   const toggleCategoria =
     (
@@ -235,10 +234,6 @@ export default function Sidebar({
       );
     };
 
-  // ---------------------------------------------------------------------------
-  // Todas las áreas
-  // ---------------------------------------------------------------------------
-
   const seleccionarTodas =
     () => {
       setCategoriaSel(
@@ -255,7 +250,6 @@ export default function Sidebar({
   return (
     <div className="w-full">
       <div className="space-y-1.5 w-full">
-        {/* Todas las áreas */}
         <button
           type="button"
           onClick={
@@ -294,9 +288,14 @@ export default function Sidebar({
                 key={
                   cat.id
                 }
-                className="space-y-1 w-full"
+                ref={(elemento) => {
+                  categoriaRefs.current[
+                    cat.id
+                  ] =
+                    elemento;
+                }}
+                className="space-y-1 w-full scroll-mt-2"
               >
-                {/* Categoría */}
                 <div
                   onClick={() =>
                     seleccionarCategoria(
@@ -347,7 +346,6 @@ export default function Sidebar({
                   )}
                 </div>
 
-                {/* Subcategorías de la categoría seleccionada */}
                 {estaExpandida &&
                   subcatsDeEsta.length >
                     0 && (
