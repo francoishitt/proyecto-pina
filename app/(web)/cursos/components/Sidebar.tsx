@@ -58,7 +58,11 @@ export default function Sidebar({
   const searchParams =
     useSearchParams();
 
-  // El ref apunta ÚNICAMENTE al encabezado de cada categoría.
+  // ---------------------------------------------------------------------------
+  // Referencias a los ENCABEZADOS de las categorías.
+  // No apuntan a las subcategorías.
+  // ---------------------------------------------------------------------------
+
   const categoriaRefs =
     useRef<
       Record<
@@ -67,37 +71,84 @@ export default function Sidebar({
       >
     >({});
 
+  // ---------------------------------------------------------------------------
+  // Obtener subcategorías pertenecientes a una categoría.
+  // ---------------------------------------------------------------------------
+
   const obtenerSubcategorias =
     (
       categoriaId: string
-    ) =>
-      subcategorias.filter(
+    ) => {
+      return subcategorias.filter(
         (subcategoria) =>
           subcategoria.categoriaId ===
           categoriaId
       );
+    };
 
-  // Desplaza visualmente hasta el encabezado de la categoría.
+  // ---------------------------------------------------------------------------
+  // Llevar la categoría seleccionada al inicio VISIBLE del panel lateral.
+  //
+  // IMPORTANTE:
+  // No usamos scrollIntoView(), porque puede desplazar toda la página.
+  // Buscamos el contenedor vertical del Sidebar y desplazamos únicamente
+  // ese contenedor.
+  // ---------------------------------------------------------------------------
+
   const llevarCategoriaAlInicio =
     (
       categoriaId: string
     ) => {
       setTimeout(() => {
-        categoriaRefs.current[
-          categoriaId
-        ]?.scrollIntoView({
+        const categoria =
+          categoriaRefs.current[
+            categoriaId
+          ];
+
+        if (!categoria) {
+          return;
+        }
+
+        const contenedor =
+          categoria.closest(
+            ".overflow-y-auto"
+          ) as HTMLElement | null;
+
+        if (!contenedor) {
+          return;
+        }
+
+        const categoriaRect =
+          categoria.getBoundingClientRect();
+
+        const contenedorRect =
+          contenedor.getBoundingClientRect();
+
+        const nuevaPosicion =
+          contenedor.scrollTop +
+          categoriaRect.top -
+          contenedorRect.top -
+          8;
+
+        contenedor.scrollTo({
+          top: Math.max(
+            0,
+            nuevaPosicion
+          ),
           behavior: "smooth",
-          block: "start",
-          inline: "nearest",
         });
       }, 100);
     };
 
-  // Al seleccionar categoría:
-  // - categoría activa
-  // - primera subcategoría activa
-  // - categoría abierta
-  // - scroll visual al encabezado de la categoría
+  // ---------------------------------------------------------------------------
+  // Seleccionar categoría desde el panel lateral.
+  //
+  // 1. Activa la categoría.
+  // 2. Abre sus subcategorías.
+  // 3. Selecciona automáticamente la primera subcategoría.
+  // 4. Lleva el encabezado de la categoría al inicio visible del panel.
+  // ---------------------------------------------------------------------------
+
   const seleccionarCategoria =
     (
       categoriaId: string
@@ -127,6 +178,14 @@ export default function Sidebar({
       );
     };
 
+  // ---------------------------------------------------------------------------
+  // Sincronización con enlaces de la barra superior.
+  //
+  // Ejemplos:
+  // /cursos?categoria=xxx
+  // /cursos?subcategoria=xxx
+  // ---------------------------------------------------------------------------
+
   useEffect(() => {
     const catUrl =
       searchParams.get(
@@ -140,6 +199,11 @@ export default function Sidebar({
 
     const timer =
       setTimeout(() => {
+        // ---------------------------------------------------------------------
+        // Si llega una subcategoría directamente por URL,
+        // respetamos esa subcategoría.
+        // ---------------------------------------------------------------------
+
         if (subUrl) {
           const subObj =
             subcategorias.find(
@@ -170,6 +234,15 @@ export default function Sidebar({
           return;
         }
 
+        // ---------------------------------------------------------------------
+        // Si llega solamente una categoría por URL:
+        //
+        // - activa la categoría;
+        // - abre sus subcategorías;
+        // - selecciona automáticamente la primera;
+        // - lleva el encabezado de la categoría al inicio del panel.
+        // ---------------------------------------------------------------------
+
         if (catUrl) {
           const categoriaExiste =
             categorias.some(
@@ -182,8 +255,12 @@ export default function Sidebar({
             categoriaExiste
           ) {
             const subs =
-              obtenerSubcategorias(
-                catUrl
+              subcategorias.filter(
+                (
+                  subcategoria
+                ) =>
+                  subcategoria.categoriaId ===
+                  catUrl
               );
 
             setCategoriaSel(
@@ -205,13 +282,16 @@ export default function Sidebar({
               catUrl
             );
           }
+
+          return;
         }
       }, 0);
 
-    return () =>
+    return () => {
       clearTimeout(
         timer
       );
+    };
   }, [
     searchParams,
     categorias,
@@ -219,6 +299,13 @@ export default function Sidebar({
     setCategoriaSel,
     setSubcategoriaSel,
   ]);
+
+  // ---------------------------------------------------------------------------
+  // Flecha del acordeón.
+  //
+  // Solamente abre/cierra visualmente.
+  // No modifica categoría ni subcategoría seleccionada.
+  // ---------------------------------------------------------------------------
 
   const toggleCategoria =
     (
@@ -230,6 +317,7 @@ export default function Sidebar({
       setAbiertas(
         (prev) => ({
           ...prev,
+
           [catId]:
             !prev[
               catId
@@ -237,6 +325,10 @@ export default function Sidebar({
         })
       );
     };
+
+  // ---------------------------------------------------------------------------
+  // Todas las áreas.
+  // ---------------------------------------------------------------------------
 
   const seleccionarTodas =
     () => {
@@ -251,9 +343,15 @@ export default function Sidebar({
       setAbiertas({});
     };
 
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+
   return (
     <div className="w-full">
       <div className="space-y-1.5 w-full">
+        {/* Todas las áreas */}
+
         <button
           type="button"
           onClick={
@@ -268,6 +366,8 @@ export default function Sidebar({
         >
           Todas las áreas
         </button>
+
+        {/* Categorías */}
 
         {categorias.map(
           (cat) => {
@@ -294,8 +394,13 @@ export default function Sidebar({
                 }
                 className="space-y-1 w-full"
               >
-                {/* ENCABEZADO DE LA CATEGORÍA:
-                    aquí está ahora el ref */}
+                {/* -----------------------------------------------------------
+                    ENCABEZADO DE CATEGORÍA
+
+                    El ref está aquí deliberadamente.
+                    El scroll debe detenerse aquí y no en la subcategoría.
+                ------------------------------------------------------------ */}
+
                 <div
                   ref={(elemento) => {
                     categoriaRefs.current[
@@ -308,7 +413,7 @@ export default function Sidebar({
                       cat.id
                     )
                   }
-                  className={`w-full flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-colors border scroll-mt-2 ${
+                  className={`w-full flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-colors border ${
                     estaActiva
                       ? "bg-blue-50 text-blue-950 font-semibold border-blue-200"
                       : "border-transparent text-slate-600 hover:text-blue-950 hover:bg-slate-100"
@@ -352,7 +457,13 @@ export default function Sidebar({
                   )}
                 </div>
 
-                {/* Subcategorías */}
+                {/* -----------------------------------------------------------
+                    SUBCATEGORÍAS
+
+                    La primera queda seleccionada automáticamente cuando
+                    se elige una categoría, pero el scroll NO llega aquí.
+                ------------------------------------------------------------ */}
+
                 {estaExpandida &&
                   subcatsDeEsta.length >
                     0 && (
