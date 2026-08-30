@@ -3,17 +3,28 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
-import { useState, useEffect, useRef } from "react";
-import { Loader2, ChevronDown, X } from "lucide-react";
+import {
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+import {
+  Loader2,
+  ChevronDown,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+
 import {
   cursoSchema,
   CursoFormData,
 } from "@/lib/validations/curso.schema";
+
 import {
   crearCurso,
   actualizarCurso,
 } from "@/actions/curso.action";
+
 import type {
   CursoConRelaciones,
   CategoriaBasica,
@@ -28,7 +39,8 @@ interface SubcategoriaBasica {
   nombre: string;
 }
 
-interface CategoriaConSubcategorias extends CategoriaBasica {
+interface CategoriaConSubcategorias
+  extends CategoriaBasica {
   subcategorias?: SubcategoriaBasica[];
 }
 
@@ -60,39 +72,62 @@ function CustomDropdown({
 }: {
   value: string;
   onChange: (val: string) => void;
-  options: { value: string; label: string }[];
+  options: {
+    value: string;
+    label: string;
+  }[];
   placeholder: string;
   disabled?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] =
+    useState(false);
+
+  const ref =
+    useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
+    const handler = (
+      e: MouseEvent
+    ) => {
       if (
         ref.current &&
-        !ref.current.contains(e.target as Node)
+        !ref.current.contains(
+          e.target as Node
+        )
       ) {
         setOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handler);
+    document.addEventListener(
+      "mousedown",
+      handler
+    );
 
     return () => {
-      document.removeEventListener("mousedown", handler);
+      document.removeEventListener(
+        "mousedown",
+        handler
+      );
     };
   }, []);
 
-  const selected = options.find(
-    (o) => o.value === value
-  );
+  const selected =
+    options.find(
+      (o) => o.value === value
+    );
 
   return (
-    <div ref={ref} className="relative">
+    <div
+      ref={ref}
+      className="relative"
+    >
       <button
         type="button"
-        onClick={() => !disabled && setOpen(!open)}
+        onClick={() =>
+          !disabled &&
+          setOpen(!open)
+        }
         disabled={disabled}
         className="w-full flex items-center justify-between bg-white border border-slate-300 text-sm font-semibold text-slate-700 py-2 px-3.5 rounded-lg outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 cursor-pointer disabled:bg-slate-100 disabled:text-slate-400"
       >
@@ -112,27 +147,38 @@ function CustomDropdown({
         />
       </button>
 
-      {open && !disabled && (
-        <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto">
-          {options.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              onClick={() => {
-                onChange(opt.value);
-                setOpen(false);
-              }}
-              className={`w-full text-left px-4 py-2 text-sm font-semibold transition cursor-pointer ${
-                value === opt.value
-                  ? "bg-orange-50 text-orange-700"
-                  : "text-slate-700 hover:bg-slate-50"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {open &&
+        !disabled && (
+          <div className="absolute z-50 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg py-1 max-h-60 overflow-y-auto">
+            {options.map(
+              (opt) => (
+                <button
+                  key={
+                    opt.value
+                  }
+                  type="button"
+                  onClick={() => {
+                    onChange(
+                      opt.value
+                    );
+
+                    setOpen(
+                      false
+                    );
+                  }}
+                  className={`w-full text-left px-4 py-2 text-sm font-semibold transition cursor-pointer ${
+                    value ===
+                    opt.value
+                      ? "bg-orange-50 text-orange-700"
+                      : "text-slate-700 hover:bg-slate-50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              )
+            )}
+          </div>
+        )}
     </div>
   );
 }
@@ -148,54 +194,83 @@ export default function Formulario({
   onGuardado,
   onCancelar,
 }: Props) {
-  const [isSubmitting, setIsSubmitting] =
-    useState(false);
+  const [
+    isSubmitting,
+    setIsSubmitting,
+  ] = useState(false);
 
-  const router = useRouter();
+  const router =
+    useRouter();
 
   // ---------------------------------------------------------------------------
   // Construimos una sola lista de subcategorías.
   // Cada subcategoría conoce automáticamente su categoría padre.
   // ---------------------------------------------------------------------------
 
-  const subcategoriasDisponibles: SubcategoriaConCategoria[] =
-    categorias.flatMap((categoria) =>
-      (categoria.subcategorias || []).map(
-        (subcategoria) => ({
-          id: subcategoria.id,
-          nombre: subcategoria.nombre,
-          categoriaId: categoria.id,
-          categoriaNombre: categoria.nombre,
-        })
-      )
+  const subcategoriasDisponibles:
+    SubcategoriaConCategoria[] =
+    categorias.flatMap(
+      (categoria) =>
+        (
+          categoria.subcategorias ||
+          []
+        ).map(
+          (
+            subcategoria
+          ) => ({
+            id:
+              subcategoria.id,
+            nombre:
+              subcategoria.nombre,
+            categoriaId:
+              categoria.id,
+            categoriaNombre:
+              categoria.nombre,
+          })
+        )
     );
 
   // ---------------------------------------------------------------------------
   // Archivos y previsualizaciones
   // ---------------------------------------------------------------------------
 
-  const [portadaPreview, setPortadaPreview] =
-    useState<string | null>(
-      curso?.portadaUrl || null
-    );
+  const [
+    portadaPreview,
+    setPortadaPreview,
+  ] = useState<
+    string | null
+  >(
+    curso?.portadaUrl ||
+      null
+  );
 
   const [
     portadaFileName,
     setPortadaFileName,
-  ] = useState<string | null>(
+  ] = useState<
+    string | null
+  >(
     curso?.portadaUrl
-      ? curso.portadaUrl.split("/").pop() ||
+      ? curso.portadaUrl
+          .split("/")
+          .pop() ||
           "Imagen actual"
       : null
   );
 
-  const [pdfFileName, setPdfFileName] =
-    useState<string | null>(
-      curso?.pdfUrl
-        ? curso.pdfUrl.split("/").pop() ||
-            "PDF actual"
-        : null
-    );
+  const [
+    pdfFileName,
+    setPdfFileName,
+  ] = useState<
+    string | null
+  >(
+    curso?.pdfUrl
+      ? curso.pdfUrl
+          .split("/")
+          .pop() ||
+          "PDF actual"
+      : null
+  );
 
   // ---------------------------------------------------------------------------
   // React Hook Form
@@ -204,42 +279,73 @@ export default function Formulario({
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: {
+      errors,
+    },
     setValue,
     reset,
     watch,
-  } = useForm<CursoFormData>({
-    resolver: zodResolver(cursoSchema),
+  } =
+    useForm<CursoFormData>(
+      {
+        resolver:
+          zodResolver(
+            cursoSchema
+          ),
 
-    defaultValues: {
-      titulo: curso?.titulo || "",
-      slug: curso?.slug || "",
-      descripcionCorta:
-        curso?.descripcionCorta || "",
-      descripcion:
-        curso?.descripcion || "",
-      esGratis: curso?.esGratis ?? true,
-      precio: curso?.precio ?? undefined,
-      publicado:
-        curso?.publicado ?? false,
+        defaultValues: {
+          titulo:
+            curso?.titulo ||
+            "",
 
-      // categoriaId se mantiene internamente,
-      // pero el usuario ya NO la selecciona.
-      categoriaId:
-        curso?.categoriaId || "",
+          slug:
+            curso?.slug ||
+            "",
 
-      subcategoriaId:
-        curso?.subcategoriaId || "",
+          descripcionCorta:
+            curso?.descripcionCorta ||
+            "",
 
-      portada: undefined,
-      pdf: undefined,
-    },
-  });
+          descripcion:
+            curso?.descripcion ||
+            "",
 
-  const esGratis = watch("esGratis");
+          esGratis:
+            curso?.esGratis ??
+            true,
+
+          precio:
+            curso?.precio ??
+            undefined,
+
+          publicado:
+            curso?.publicado ??
+            false,
+
+          categoriaId:
+            curso?.categoriaId ||
+            "",
+
+          subcategoriaId:
+            curso?.subcategoriaId ||
+            "",
+
+          portada:
+            undefined,
+
+          pdf:
+            undefined,
+        },
+      }
+    );
+
+  const esGratis =
+    watch("esGratis");
 
   const subcategoriaSeleccionadaId =
-    watch("subcategoriaId") || "";
+    watch(
+      "subcategoriaId"
+    ) || "";
 
   const subcategoriaSeleccionada =
     subcategoriasDisponibles.find(
@@ -249,62 +355,65 @@ export default function Formulario({
     );
 
   // ---------------------------------------------------------------------------
-  // Cuando cambia la subcategoría,
-  // actualizamos automáticamente categoriaId.
-  // ---------------------------------------------------------------------------
-
-  useEffect(() => {
-    if (subcategoriaSeleccionada) {
-      setValue(
-        "categoriaId",
-        subcategoriaSeleccionada.categoriaId,
-        {
-          shouldValidate: true,
-        }
-      );
-    } else {
-      setValue("categoriaId", "", {
-        shouldValidate: true,
-      });
-    }
-  }, [
-    subcategoriaSeleccionada,
-    setValue,
-  ]);
-
-  // ---------------------------------------------------------------------------
   // Cargar datos cuando se edita un material
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
     reset({
-      titulo: curso?.titulo || "",
-      slug: curso?.slug || "",
+      titulo:
+        curso?.titulo ||
+        "",
+
+      slug:
+        curso?.slug ||
+        "",
+
       descripcionCorta:
-        curso?.descripcionCorta || "",
+        curso?.descripcionCorta ||
+        "",
+
       descripcion:
-        curso?.descripcion || "",
-      esGratis: curso?.esGratis ?? true,
-      precio: curso?.precio ?? undefined,
+        curso?.descripcion ||
+        "",
+
+      esGratis:
+        curso?.esGratis ??
+        true,
+
+      precio:
+        curso?.precio ??
+        undefined,
+
       publicado:
-        curso?.publicado ?? false,
+        curso?.publicado ??
+        false,
+
       categoriaId:
-        curso?.categoriaId || "",
+        curso?.categoriaId ||
+        "",
+
       subcategoriaId:
-        curso?.subcategoriaId || "",
-      portada: undefined,
-      pdf: undefined,
+        curso?.subcategoriaId ||
+        "",
+
+      portada:
+        undefined,
+
+      pdf:
+        undefined,
     });
 
     setPortadaPreview(
-      curso?.portadaUrl || null
+      curso?.portadaUrl ||
+        null
     );
 
     setPortadaFileName(
       curso?.portadaUrl
         ? curso.portadaUrl
             .split("/")
-            .pop() || "Imagen actual"
+            .pop() ||
+            "Imagen actual"
         : null
     );
 
@@ -312,10 +421,14 @@ export default function Formulario({
       curso?.pdfUrl
         ? curso.pdfUrl
             .split("/")
-            .pop() || "PDF actual"
+            .pop() ||
+            "PDF actual"
         : null
     );
-  }, [curso, reset]);
+  }, [
+    curso,
+    reset,
+  ]);
 
   // ---------------------------------------------------------------------------
   // Enviar formulario
@@ -325,10 +438,13 @@ export default function Formulario({
     data: CursoFormData
   ) => {
     // Subcategoría obligatoria
-    if (!data.subcategoriaId) {
+    if (
+      !data.subcategoriaId
+    ) {
       toast.error(
         "Debes seleccionar una subcategoría"
       );
+
       return;
     }
 
@@ -336,32 +452,41 @@ export default function Formulario({
     const subcategoria =
       subcategoriasDisponibles.find(
         (sub) =>
-          sub.id === data.subcategoriaId
+          sub.id ===
+          data.subcategoriaId
       );
 
     if (!subcategoria) {
       toast.error(
         "La subcategoría seleccionada no es válida"
       );
+
       return;
     }
 
     // PDF obligatorio al crear
-    if (modo === "crear") {
+    if (
+      modo === "crear"
+    ) {
       if (
         !data.pdf ||
-        data.pdf.length === 0
+        data.pdf.length ===
+          0
       ) {
         toast.error(
           "El archivo PDF es obligatorio para crear un material"
         );
+
         return;
       }
     }
 
-    setIsSubmitting(true);
+    setIsSubmitting(
+      true
+    );
 
-    const formData = new FormData();
+    const formData =
+      new FormData();
 
     formData.append(
       "titulo",
@@ -385,28 +510,28 @@ export default function Formulario({
 
     formData.append(
       "esGratis",
-      String(data.esGratis)
+      String(
+        data.esGratis
+      )
     );
 
     formData.append(
       "publicado",
-      String(data.publicado)
+      String(
+        data.publicado
+      )
     );
 
-    // -------------------------------------------------------------------------
-    // ÚNICA selección hecha por el usuario:
-    // subcategoriaId
-    // -------------------------------------------------------------------------
+    // La única selección estructural realizada por
+    // el usuario es la subcategoría.
 
     formData.append(
       "subcategoriaId",
       subcategoria.id
     );
 
-    // -------------------------------------------------------------------------
     // categoriaId se obtiene automáticamente
     // de la subcategoría seleccionada.
-    // -------------------------------------------------------------------------
 
     formData.append(
       "categoriaId",
@@ -419,13 +544,16 @@ export default function Formulario({
     ) {
       formData.append(
         "precio",
-        String(data.precio)
+        String(
+          data.precio
+        )
       );
     }
 
     if (
       data.portada &&
-      data.portada.length > 0
+      data.portada.length >
+        0
     ) {
       formData.append(
         "portada",
@@ -435,7 +563,8 @@ export default function Formulario({
 
     if (
       data.pdf &&
-      data.pdf.length > 0
+      data.pdf.length >
+        0
     ) {
       formData.append(
         "pdf",
@@ -446,7 +575,9 @@ export default function Formulario({
     try {
       const res =
         modo === "crear"
-          ? await crearCurso(formData)
+          ? await crearCurso(
+              formData
+            )
           : await actualizarCurso(
               curso!.id,
               formData
@@ -475,9 +606,13 @@ export default function Formulario({
         "Error de conexión"
       );
 
-      console.error(err);
+      console.error(
+        err
+      );
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(
+        false
+      );
     }
   };
 
@@ -495,7 +630,10 @@ export default function Formulario({
         ""
       )
       .toLowerCase()
-      .replace(/\s+/g, "-")
+      .replace(
+        /\s+/g,
+        "-"
+      )
       .replace(
         /[^a-z0-9-]/g,
         ""
@@ -505,24 +643,33 @@ export default function Formulario({
   // Limpiar archivos
   // ---------------------------------------------------------------------------
 
-  const limpiarPortada = () => {
-    setPortadaPreview(null);
-    setPortadaFileName(null);
+  const limpiarPortada =
+    () => {
+      setPortadaPreview(
+        null
+      );
 
-    setValue(
-      "portada",
-      undefined
-    );
-  };
+      setPortadaFileName(
+        null
+      );
 
-  const limpiarPdf = () => {
-    setPdfFileName(null);
+      setValue(
+        "portada",
+        undefined
+      );
+    };
 
-    setValue(
-      "pdf",
-      undefined
-    );
-  };
+  const limpiarPdf =
+    () => {
+      setPdfFileName(
+        null
+      );
+
+      setValue(
+        "pdf",
+        undefined
+      );
+    };
 
   // ---------------------------------------------------------------------------
   // Interfaz
@@ -530,7 +677,9 @@ export default function Formulario({
 
   return (
     <form
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(
+        onSubmit
+      )}
       className="bg-white rounded-xl border border-slate-300 p-6 space-y-6"
     >
       <h2 className="text-xl font-semibold text-slate-800">
@@ -540,7 +689,6 @@ export default function Formulario({
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
         {/* Título */}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-1">
@@ -548,16 +696,23 @@ export default function Formulario({
           </label>
 
           <input
-            {...register("titulo")}
-            onChange={(e) => {
+            {...register(
+              "titulo"
+            )}
+            onChange={(
+              e
+            ) => {
               register(
                 "titulo"
-              ).onChange(e);
+              ).onChange(
+                e
+              );
 
               setValue(
                 "slug",
                 generarSlug(
-                  e.target.value
+                  e.target
+                    .value
                 )
               );
             }}
@@ -566,7 +721,11 @@ export default function Formulario({
 
           {errors.titulo && (
             <p className="text-red-500 text-xs mt-1">
-              {errors.titulo.message}
+              {
+                errors
+                  .titulo
+                  .message
+              }
             </p>
           )}
         </div>
@@ -578,11 +737,16 @@ export default function Formulario({
           </label>
 
           <input
-            {...register("slug")}
-            onChange={(e) => {
+            {...register(
+              "slug"
+            )}
+            onChange={(
+              e
+            ) => {
               const limpio =
                 generarSlug(
-                  e.target.value
+                  e.target
+                    .value
                 );
 
               e.target.value =
@@ -590,14 +754,20 @@ export default function Formulario({
 
               register(
                 "slug"
-              ).onChange(e);
+              ).onChange(
+                e
+              );
             }}
             className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-800 placeholder:text-slate-300 focus:ring-1 focus:ring-orange-500 outline-none"
           />
 
           {errors.slug && (
             <p className="text-red-500 text-xs mt-1">
-              {errors.slug.message}
+              {
+                errors
+                  .slug
+                  .message
+              }
             </p>
           )}
         </div>
@@ -637,20 +807,50 @@ export default function Formulario({
             value={
               subcategoriaSeleccionadaId
             }
-            onChange={(val) => {
+            onChange={(
+              val
+            ) => {
+              const subcategoria =
+                subcategoriasDisponibles.find(
+                  (
+                    sub
+                  ) =>
+                    sub.id ===
+                    val
+                );
+
               setValue(
                 "subcategoriaId",
                 val,
                 {
                   shouldValidate:
                     true,
+                  shouldDirty:
+                    true,
+                }
+              );
+
+              setValue(
+                "categoriaId",
+                subcategoria?.categoriaId ||
+                  "",
+                {
+                  shouldValidate:
+                    true,
+                  shouldDirty:
+                    true,
                 }
               );
             }}
             options={subcategoriasDisponibles.map(
-              (sub) => ({
-                value: sub.id,
-                label: `${sub.nombre} — ${sub.categoriaNombre}`,
+              (
+                sub
+              ) => ({
+                value:
+                  sub.id,
+
+                label:
+                  `${sub.nombre} — ${sub.categoriaNombre}`,
               })
             )}
             placeholder="Seleccionar subcategoría"
@@ -721,7 +921,8 @@ export default function Formulario({
           {errors.descripcion && (
             <p className="text-red-500 text-xs mt-1">
               {
-                errors.descripcion
+                errors
+                  .descripcion
                   .message
               }
             </p>
@@ -746,10 +947,14 @@ export default function Formulario({
                   {...register(
                     "portada"
                   )}
-                  onChange={(e) => {
+                  onChange={(
+                    e
+                  ) => {
                     register(
                       "portada"
-                    ).onChange(e);
+                    ).onChange(
+                      e
+                    );
 
                     const file =
                       e.target
@@ -804,7 +1009,9 @@ export default function Formulario({
                   className="absolute top-0 right-0 bg-red-500/90 hover:bg-red-600 text-white p-0.5 rounded-bl-lg transition cursor-pointer"
                   title="Quitar imagen"
                 >
-                  <X size={12} />
+                  <X
+                    size={12}
+                  />
                 </button>
               </div>
             )}
@@ -813,7 +1020,8 @@ export default function Formulario({
           {errors.portada && (
             <p className="text-red-500 text-xs">
               {
-                errors.portada
+                errors
+                  .portada
                   .message
               }
             </p>
@@ -824,7 +1032,8 @@ export default function Formulario({
         <div className="space-y-1">
           <label className="block text-sm font-semibold text-slate-700">
             PDF{" "}
-            {modo === "crear"
+            {modo ===
+            "crear"
               ? "*"
               : "(dejar vacío para no cambiar)"}
           </label>
@@ -837,11 +1046,17 @@ export default function Formulario({
                 type="file"
                 accept="application/pdf"
                 className="hidden"
-                {...register("pdf")}
-                onChange={(e) => {
+                {...register(
+                  "pdf"
+                )}
+                onChange={(
+                  e
+                ) => {
                   register(
                     "pdf"
-                  ).onChange(e);
+                  ).onChange(
+                    e
+                  );
 
                   const file =
                     e.target
@@ -879,7 +1094,9 @@ export default function Formulario({
                   className="text-red-500 hover:text-red-700 cursor-pointer transition"
                   title="Quitar archivo"
                 >
-                  <X size={14} />
+                  <X
+                    size={14}
+                  />
                 </button>
               </div>
             )}
@@ -887,7 +1104,11 @@ export default function Formulario({
 
           {errors.pdf && (
             <p className="text-red-500 text-xs">
-              {errors.pdf.message}
+              {
+                errors
+                  .pdf
+                  .message
+              }
             </p>
           )}
         </div>
@@ -920,17 +1141,21 @@ export default function Formulario({
                 {...register(
                   "precio",
                   {
-                    setValueAs: (
-                      v
-                    ) =>
-                      v === "" ||
-                      Number.isNaN(
-                        Number(v)
-                      )
-                        ? undefined
-                        : parseFloat(
+                    setValueAs:
+                      (
+                        v
+                      ) =>
+                        v ===
+                          "" ||
+                        Number.isNaN(
+                          Number(
                             v
-                          ),
+                          )
+                        )
+                          ? undefined
+                          : parseFloat(
+                              v
+                            ),
                   }
                 )}
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold text-slate-800 focus:ring-1 focus:ring-orange-500 outline-none"
@@ -940,7 +1165,8 @@ export default function Formulario({
               {errors.precio && (
                 <p className="text-red-500 text-xs mt-1">
                   {
-                    errors.precio
+                    errors
+                      .precio
                       .message
                   }
                 </p>
@@ -1000,7 +1226,8 @@ export default function Formulario({
             />
           </span>
 
-          {modo === "crear"
+          {modo ===
+          "crear"
             ? "Crear material"
             : "Guardar cambios"}
         </button>
