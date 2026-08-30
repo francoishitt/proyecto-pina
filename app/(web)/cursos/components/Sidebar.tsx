@@ -58,6 +58,7 @@ export default function Sidebar({
   const searchParams =
     useSearchParams();
 
+  // El ref apunta ÚNICAMENTE al encabezado de cada categoría.
   const categoriaRefs =
     useRef<
       Record<
@@ -76,6 +77,7 @@ export default function Sidebar({
           categoriaId
       );
 
+  // Desplaza visualmente hasta el encabezado de la categoría.
   const llevarCategoriaAlInicio =
     (
       categoriaId: string
@@ -86,10 +88,16 @@ export default function Sidebar({
         ]?.scrollIntoView({
           behavior: "smooth",
           block: "start",
+          inline: "nearest",
         });
-      }, 50);
+      }, 100);
     };
 
+  // Al seleccionar categoría:
+  // - categoría activa
+  // - primera subcategoría activa
+  // - categoría abierta
+  // - scroll visual al encabezado de la categoría
   const seleccionarCategoria =
     (
       categoriaId: string
@@ -174,12 +182,8 @@ export default function Sidebar({
             categoriaExiste
           ) {
             const subs =
-              subcategorias.filter(
-                (
-                  subcategoria
-                ) =>
-                  subcategoria.categoriaId ===
-                  catUrl
+              obtenerSubcategorias(
+                catUrl
               );
 
             setCategoriaSel(
@@ -288,21 +292,23 @@ export default function Sidebar({
                 key={
                   cat.id
                 }
-                ref={(elemento) => {
-                  categoriaRefs.current[
-                    cat.id
-                  ] =
-                    elemento;
-                }}
-                className="space-y-1 w-full scroll-mt-2"
+                className="space-y-1 w-full"
               >
+                {/* ENCABEZADO DE LA CATEGORÍA:
+                    aquí está ahora el ref */}
                 <div
+                  ref={(elemento) => {
+                    categoriaRefs.current[
+                      cat.id
+                    ] =
+                      elemento;
+                  }}
                   onClick={() =>
                     seleccionarCategoria(
                       cat.id
                     )
                   }
-                  className={`w-full flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-colors border ${
+                  className={`w-full flex items-center justify-between py-2.5 px-3 rounded-xl cursor-pointer transition-colors border scroll-mt-2 ${
                     estaActiva
                       ? "bg-blue-50 text-blue-950 font-semibold border-blue-200"
                       : "border-transparent text-slate-600 hover:text-blue-950 hover:bg-slate-100"
@@ -346,6 +352,7 @@ export default function Sidebar({
                   )}
                 </div>
 
+                {/* Subcategorías */}
                 {estaExpandida &&
                   subcatsDeEsta.length >
                     0 && (
