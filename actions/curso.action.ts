@@ -5,7 +5,10 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { v4 as uuidv4 } from "uuid";
 import { cursoSchema } from "@/lib/validations/curso.schema";
-import { PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import {
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import { r2, R2_BUCKET } from "@/lib/r2";
 import {
   exigirAdmin,
@@ -13,7 +16,10 @@ import {
   mensajeErrorPermisos,
 } from "@/lib/auth";
 
-// --- Guachimán de Tipos para Prisma ---
+// =============================================================================
+// TIPOS PRISMA
+// =============================================================================
+
 interface PrismaError extends Error {
   code: string;
 }
@@ -27,9 +33,9 @@ function isPrismaError(error: unknown): error is PrismaError {
   );
 }
 
-// =========================================================================
-// ARCHIVOS EN CLOUDFLARE R2
-// =========================================================================
+// =============================================================================
+// ARCHIVOS - CLOUDFLARE R2
+// =============================================================================
 
 async function uploadFile(
   file: File,
@@ -37,20 +43,47 @@ async function uploadFile(
 ): Promise<string> {
   const ext = file.name.split(".").pop()?.toLowerCase();
 
+  // ---------------------------------------------------------------------------
+  // Validación PDF
+  // ---------------------------------------------------------------------------
+
   if (tipoLog === "PDF") {
     if (file.size > 20 * 1024 * 1024) {
       throw new Error("El PDF no puede superar 20 MB.");
     }
 
-    if (file.type !== "application/pdf" || ext !== "pdf") {
-      throw new Error("Solo se permiten archivos PDF.");
+    if (
+      file.type !== "application/pdf" ||
+      ext !== "pdf"
+    ) {
+      throw new Error(
+        "Solo se permiten archivos PDF."
+      );
     }
-  } else {
-    const extensiones = ["jpg", "jpeg", "png", "webp"];
-    const tipos = ["image/jpeg", "image/png", "image/webp"];
+  }
+
+  // ---------------------------------------------------------------------------
+  // Validación portada
+  // ---------------------------------------------------------------------------
+
+  else {
+    const extensiones = [
+      "jpg",
+      "jpeg",
+      "png",
+      "webp",
+    ];
+
+    const tipos = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+    ];
 
     if (file.size > 5 * 1024 * 1024) {
-      throw new Error("La portada no puede superar 5 MB.");
+      throw new Error(
+        "La portada no puede superar 5 MB."
+      );
     }
 
     if (
@@ -58,14 +91,27 @@ async function uploadFile(
       !extensiones.includes(ext) ||
       !tipos.includes(file.type)
     ) {
-      throw new Error("La portada debe ser JPG, PNG o WEBP.");
+      throw new Error(
+        "La portada debe ser JPG, PNG o WEBP."
+      );
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Nombre UUID
+  // ---------------------------------------------------------------------------
+
   const fileName = `${uuidv4()}.${ext}`;
 
-  const arrayBuffer = await file.arrayBuffer();
-  const buffer = Buffer.from(arrayBuffer);
+  const arrayBuffer =
+    await file.arrayBuffer();
+
+  const buffer =
+    Buffer.from(arrayBuffer);
+
+  // ---------------------------------------------------------------------------
+  // Subida a R2
+  // ---------------------------------------------------------------------------
 
   try {
     await r2.send(
@@ -81,7 +127,7 @@ async function uploadFile(
       `Archivo guardado correctamente en R2: ${fileName} (${tipoLog})`
     );
 
-    // La URL pública interna de Proyecto Piña NO cambia.
+    // Mantenemos la URL interna de Proyecto Piña.
     return `/api/archivos/${fileName}`;
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -91,14 +137,21 @@ async function uploadFile(
       );
     }
 
-    throw new Error("Error al guardar archivo.");
+    throw new Error(
+      "Error al guardar archivo."
+    );
   }
 }
 
-async function deleteFile(url: string) {
-  // Ejemplo:
-  // /api/archivos/archivo.pdf -> archivo.pdf
-  const fileName = url.split("/").pop();
+// =============================================================================
+// ELIMINAR ARCHIVO DE R2
+// =============================================================================
+
+async function deleteFile(
+  url: string
+) {
+  const fileName =
+    url.split("/").pop();
 
   if (!fileName) {
     return;
@@ -125,40 +178,79 @@ async function deleteFile(url: string) {
   }
 }
 
-// =========================================================================
-// OBTENER CURSOS
-// =========================================================================
+// =============================================================================
+// OBTENER Y VALIDAR SUBCATEGORÍA
+// =============================================================================
+
+async function obtenerSubcategoria(
+  subcategoriaId: string
+) {
+  if (!subcategoriaId) {
+    throw new Error(
+      "Debes seleccionar una subcategoría."
+    );
+  }
+
+  const subcategoria =
+    await prisma.subcategoria.findUnique({
+      where: {
+        id: subcategoriaId,
+      },
+
+      select: {
+        id: true,
+        nombre: true,
+        categoriaId: true,
+      },
+    });
+
+  if (!subcategoria) {
+    throw new Error(
+      "La subcategoría seleccionada no existe."
+    );
+  }
+
+  return subcategoria;
+}
+
+// =============================================================================
+// OBTENER CURSOS / MATERIALES
+// =============================================================================
 
 export async function obtenerCursos() {
   try {
     await exigirUsuarioPanel();
 
-    const cursos = await prisma.curso.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
-        categoria: {
-          select: {
-            id: true,
-            nombre: true,
+    const cursos =
+      await prisma.curso.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+
+        include: {
+          categoria: {
+            select: {
+              id: true,
+              nombre: true,
+            },
+          },
+
+          subcategoria: {
+            select: {
+              id: true,
+              nombre: true,
+            },
           },
         },
-        subcategoria: {
-          select: {
-            id: true,
-            nombre: true,
-          },
-        },
-      },
-    });
+      });
 
     return {
       success: true,
       data: cursos,
     };
   } catch (error: unknown) {
-    const permiso = mensajeErrorPermisos(error);
+    const permiso =
+      mensajeErrorPermisos(error);
 
     if (permiso) {
       return {
@@ -176,49 +268,91 @@ export async function obtenerCursos() {
 
     return {
       success: false,
-      error: "No se pudieron cargar los cursos.",
+      error:
+        "No se pudieron cargar los cursos.",
     };
   }
 }
 
-// =========================================================================
-// CREAR CURSO
-// =========================================================================
+// =============================================================================
+// CREAR MATERIAL
+// =============================================================================
 
-export async function crearCurso(formData: FormData) {
+export async function crearCurso(
+  formData: FormData
+) {
   try {
     await exigirUsuarioPanel();
 
+    // -------------------------------------------------------------------------
+    // El usuario SOLO selecciona subcategoría.
+    // La categoría se obtiene desde MySQL.
+    // -------------------------------------------------------------------------
+
+    const subcategoriaId =
+      formData
+        .get("subcategoriaId")
+        ?.toString() || "";
+
+    const subcategoria =
+      await obtenerSubcategoria(
+        subcategoriaId
+      );
+
+    // -------------------------------------------------------------------------
+    // Datos del formulario
+    // -------------------------------------------------------------------------
+
     const raw = {
       titulo:
-        formData.get("titulo")?.toString() || "",
+        formData
+          .get("titulo")
+          ?.toString() || "",
 
       slug:
-        formData.get("slug")?.toString() || "",
+        formData
+          .get("slug")
+          ?.toString() || "",
 
       descripcionCorta:
-        formData.get("descripcionCorta")?.toString() || "",
+        formData
+          .get("descripcionCorta")
+          ?.toString() || "",
 
       descripcion:
-        formData.get("descripcion")?.toString() || "",
+        formData
+          .get("descripcion")
+          ?.toString() || "",
 
       esGratis:
-        formData.get("esGratis") === "true",
+        formData.get("esGratis") ===
+        "true",
 
-      precio: formData.get("precio")
-        ? parseFloat(formData.get("precio") as string)
-        : undefined,
+      precio:
+        formData.get("precio")
+          ? parseFloat(
+              formData.get(
+                "precio"
+              ) as string
+            )
+          : undefined,
 
       publicado:
-        formData.get("publicado") === "true",
+        formData.get("publicado") ===
+        "true",
 
+      // IMPORTANTE:
+      // categoriaId NO se acepta desde el navegador.
       categoriaId:
-        formData.get("categoriaId")?.toString() || "",
+        subcategoria.categoriaId,
 
       subcategoriaId:
-        formData.get("subcategoriaId")?.toString() ||
-        undefined,
+        subcategoria.id,
     };
+
+    // -------------------------------------------------------------------------
+    // Validación Zod sin archivos
+    // -------------------------------------------------------------------------
 
     const {
       portada: _p,
@@ -226,7 +360,8 @@ export async function crearCurso(formData: FormData) {
       ...schemaSinArchivos
     } = cursoSchema.shape;
 
-    const schemaParcial = z.object(schemaSinArchivos);
+    const schemaParcial =
+      z.object(schemaSinArchivos);
 
     const validacion =
       schemaParcial.safeParse(raw);
@@ -235,18 +370,27 @@ export async function crearCurso(formData: FormData) {
       return {
         success: false,
         error:
-          validacion.error.issues[0].message,
+          validacion.error
+            .issues[0].message,
       };
     }
 
     const datosValidados =
       validacion.data;
 
+    // -------------------------------------------------------------------------
+    // Archivos
+    // -------------------------------------------------------------------------
+
     const portadaFile =
-      formData.get("portada") as File | null;
+      formData.get(
+        "portada"
+      ) as File | null;
 
     const pdfFile =
-      formData.get("pdf") as File | null;
+      formData.get(
+        "pdf"
+      ) as File | null;
 
     if (
       !pdfFile ||
@@ -257,16 +401,23 @@ export async function crearCurso(formData: FormData) {
       );
     }
 
-    // PDF -> R2
+    // -------------------------------------------------------------------------
+    // PDF a R2
+    // -------------------------------------------------------------------------
+
     const pdfUrl =
       await uploadFile(
         pdfFile,
         "PDF"
       );
 
-    // Portada -> R2
-    let portadaUrl: string | null =
-      null;
+    // -------------------------------------------------------------------------
+    // Portada a R2
+    // -------------------------------------------------------------------------
+
+    let portadaUrl:
+      | string
+      | null = null;
 
     if (
       portadaFile &&
@@ -279,6 +430,10 @@ export async function crearCurso(formData: FormData) {
         );
     }
 
+    // -------------------------------------------------------------------------
+    // Guardar material
+    // -------------------------------------------------------------------------
+
     const curso =
       await prisma.curso.create({
         data: {
@@ -288,9 +443,13 @@ export async function crearCurso(formData: FormData) {
             datosValidados.precio ??
             null,
 
+          // La relación queda forzada
+          // por la subcategoría real.
+          categoriaId:
+            subcategoria.categoriaId,
+
           subcategoriaId:
-            datosValidados.subcategoriaId ??
-            null,
+            subcategoria.id,
 
           tituloBusqueda:
             datosValidados.titulo
@@ -347,9 +506,9 @@ export async function crearCurso(formData: FormData) {
   }
 }
 
-// =========================================================================
-// ACTUALIZAR CURSO
-// =========================================================================
+// =============================================================================
+// ACTUALIZAR MATERIAL
+// =============================================================================
 
 export async function actualizarCurso(
   id: string,
@@ -357,6 +516,10 @@ export async function actualizarCurso(
 ) {
   try {
     await exigirUsuarioPanel();
+
+    // -------------------------------------------------------------------------
+    // Material existente
+    // -------------------------------------------------------------------------
 
     const cursoActual =
       await prisma.curso.findUnique({
@@ -371,36 +534,73 @@ export async function actualizarCurso(
       );
     }
 
+    // -------------------------------------------------------------------------
+    // Subcategoría obligatoria
+    // -------------------------------------------------------------------------
+
+    const subcategoriaId =
+      formData
+        .get("subcategoriaId")
+        ?.toString() || "";
+
+    const subcategoria =
+      await obtenerSubcategoria(
+        subcategoriaId
+      );
+
+    // -------------------------------------------------------------------------
+    // Datos
+    // -------------------------------------------------------------------------
+
     const raw = {
       titulo:
-        formData.get("titulo")?.toString() || "",
+        formData
+          .get("titulo")
+          ?.toString() || "",
 
       slug:
-        formData.get("slug")?.toString() || "",
+        formData
+          .get("slug")
+          ?.toString() || "",
 
       descripcionCorta:
-        formData.get("descripcionCorta")?.toString() || "",
+        formData
+          .get("descripcionCorta")
+          ?.toString() || "",
 
       descripcion:
-        formData.get("descripcion")?.toString() || "",
+        formData
+          .get("descripcion")
+          ?.toString() || "",
 
       esGratis:
-        formData.get("esGratis") === "true",
+        formData.get("esGratis") ===
+        "true",
 
-      precio: formData.get("precio")
-        ? parseFloat(formData.get("precio") as string)
-        : undefined,
+      precio:
+        formData.get("precio")
+          ? parseFloat(
+              formData.get(
+                "precio"
+              ) as string
+            )
+          : undefined,
 
       publicado:
-        formData.get("publicado") === "true",
+        formData.get("publicado") ===
+        "true",
 
+      // Categoría determinada por MySQL.
       categoriaId:
-        formData.get("categoriaId")?.toString() || "",
+        subcategoria.categoriaId,
 
       subcategoriaId:
-        formData.get("subcategoriaId")?.toString() ||
-        undefined,
+        subcategoria.id,
     };
+
+    // -------------------------------------------------------------------------
+    // Validación
+    // -------------------------------------------------------------------------
 
     const {
       portada: _p,
@@ -418,19 +618,27 @@ export async function actualizarCurso(
       return {
         success: false,
         error:
-          validacion.error.issues[0]
-            .message,
+          validacion.error
+            .issues[0].message,
       };
     }
 
     const datosValidados =
       validacion.data;
 
+    // -------------------------------------------------------------------------
+    // Archivos
+    // -------------------------------------------------------------------------
+
     const portadaFile =
-      formData.get("portada") as File | null;
+      formData.get(
+        "portada"
+      ) as File | null;
 
     const pdfFile =
-      formData.get("pdf") as File | null;
+      formData.get(
+        "pdf"
+      ) as File | null;
 
     let portadaUrl =
       cursoActual.portadaUrl;
@@ -438,7 +646,10 @@ export async function actualizarCurso(
     let pdfUrl =
       cursoActual.pdfUrl;
 
+    // -------------------------------------------------------------------------
     // Nueva portada
+    // -------------------------------------------------------------------------
+
     if (
       portadaFile &&
       portadaFile.size > 0
@@ -456,7 +667,10 @@ export async function actualizarCurso(
         );
     }
 
+    // -------------------------------------------------------------------------
     // Nuevo PDF
+    // -------------------------------------------------------------------------
+
     if (
       pdfFile &&
       pdfFile.size > 0
@@ -474,6 +688,10 @@ export async function actualizarCurso(
         );
     }
 
+    // -------------------------------------------------------------------------
+    // Actualizar MySQL
+    // -------------------------------------------------------------------------
+
     const curso =
       await prisma.curso.update({
         where: {
@@ -487,9 +705,13 @@ export async function actualizarCurso(
             datosValidados.precio ??
             null,
 
+          // Relaciones determinadas
+          // únicamente por la subcategoría.
+          categoriaId:
+            subcategoria.categoriaId,
+
           subcategoriaId:
-            datosValidados.subcategoriaId ??
-            null,
+            subcategoria.id,
 
           tituloBusqueda:
             datosValidados.titulo
@@ -550,14 +772,15 @@ export async function actualizarCurso(
   }
 }
 
-// =========================================================================
-// ELIMINAR CURSO
-// =========================================================================
+// =============================================================================
+// ELIMINAR MATERIAL
+// =============================================================================
 
 export async function eliminarCurso(
   id: string
 ) {
   try {
+    // Solo ADMIN puede eliminar definitivamente.
     await exigirAdmin();
 
     const curso =
@@ -573,6 +796,10 @@ export async function eliminarCurso(
       );
     }
 
+    // -------------------------------------------------------------------------
+    // Eliminar archivos R2
+    // -------------------------------------------------------------------------
+
     if (curso.portadaUrl) {
       await deleteFile(
         curso.portadaUrl
@@ -584,6 +811,10 @@ export async function eliminarCurso(
         curso.pdfUrl
       );
     }
+
+    // -------------------------------------------------------------------------
+    // Eliminar registro
+    // -------------------------------------------------------------------------
 
     await prisma.curso.delete({
       where: {
@@ -631,9 +862,9 @@ export async function eliminarCurso(
   }
 }
 
-// =========================================================================
+// =============================================================================
 // BUSCADOR RÁPIDO
-// =========================================================================
+// =============================================================================
 
 export async function buscarCursosRapido(
   termino: string
