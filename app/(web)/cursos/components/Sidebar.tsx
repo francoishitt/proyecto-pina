@@ -59,8 +59,7 @@ export default function Sidebar({
     useSearchParams();
 
   // ---------------------------------------------------------------------------
-  // Referencias a los ENCABEZADOS de las categorías.
-  // No apuntan a las subcategorías.
+  // Referencia al encabezado de cada categoría.
   // ---------------------------------------------------------------------------
 
   const categoriaRefs =
@@ -72,27 +71,21 @@ export default function Sidebar({
     >({});
 
   // ---------------------------------------------------------------------------
-  // Obtener subcategorías pertenecientes a una categoría.
+  // Subcategorías de una categoría.
   // ---------------------------------------------------------------------------
 
   const obtenerSubcategorias =
     (
       categoriaId: string
-    ) => {
-      return subcategorias.filter(
+    ) =>
+      subcategorias.filter(
         (subcategoria) =>
           subcategoria.categoriaId ===
           categoriaId
       );
-    };
 
   // ---------------------------------------------------------------------------
-  // Llevar la categoría seleccionada al inicio VISIBLE del panel lateral.
-  //
-  // IMPORTANTE:
-  // No usamos scrollIntoView(), porque puede desplazar toda la página.
-  // Buscamos el contenedor vertical del Sidebar y desplazamos únicamente
-  // ese contenedor.
+  // Desplazar ÚNICAMENTE el panel lateral hasta el encabezado de la categoría.
   // ---------------------------------------------------------------------------
 
   const llevarCategoriaAlInicio =
@@ -124,7 +117,7 @@ export default function Sidebar({
         const contenedorRect =
           contenedor.getBoundingClientRect();
 
-        const nuevaPosicion =
+        const destino =
           contenedor.scrollTop +
           categoriaRect.top -
           contenedorRect.top -
@@ -133,20 +126,20 @@ export default function Sidebar({
         contenedor.scrollTo({
           top: Math.max(
             0,
-            nuevaPosicion
+            destino
           ),
           behavior: "smooth",
         });
-      }, 100);
+      }, 120);
     };
 
   // ---------------------------------------------------------------------------
-  // Seleccionar categoría desde el panel lateral.
+  // Selección de categoría.
   //
-  // 1. Activa la categoría.
-  // 2. Abre sus subcategorías.
-  // 3. Selecciona automáticamente la primera subcategoría.
-  // 4. Lleva el encabezado de la categoría al inicio visible del panel.
+  // - Activa la categoría.
+  // - Abre sus subcategorías.
+  // - Selecciona automáticamente la primera.
+  // - Lleva visualmente la categoría padre al inicio del panel.
   // ---------------------------------------------------------------------------
 
   const seleccionarCategoria =
@@ -179,11 +172,10 @@ export default function Sidebar({
     };
 
   // ---------------------------------------------------------------------------
-  // Sincronización con enlaces de la barra superior.
+  // Sincronización con la barra superior:
   //
-  // Ejemplos:
-  // /cursos?categoria=xxx
-  // /cursos?subcategoria=xxx
+  // /cursos?categoria=...
+  // /cursos?subcategoria=...
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
@@ -199,11 +191,7 @@ export default function Sidebar({
 
     const timer =
       setTimeout(() => {
-        // ---------------------------------------------------------------------
-        // Si llega una subcategoría directamente por URL,
-        // respetamos esa subcategoría.
-        // ---------------------------------------------------------------------
-
+        // Subcategoría específica desde URL
         if (subUrl) {
           const subObj =
             subcategorias.find(
@@ -234,15 +222,7 @@ export default function Sidebar({
           return;
         }
 
-        // ---------------------------------------------------------------------
-        // Si llega solamente una categoría por URL:
-        //
-        // - activa la categoría;
-        // - abre sus subcategorías;
-        // - selecciona automáticamente la primera;
-        // - lleva el encabezado de la categoría al inicio del panel.
-        // ---------------------------------------------------------------------
-
+        // Categoría desde URL
         if (catUrl) {
           const categoriaExiste =
             categorias.some(
@@ -251,39 +231,33 @@ export default function Sidebar({
                 catUrl
             );
 
-          if (
-            categoriaExiste
-          ) {
-            const subs =
-              subcategorias.filter(
-                (
-                  subcategoria
-                ) =>
-                  subcategoria.categoriaId ===
-                  catUrl
-              );
-
-            setCategoriaSel(
-              catUrl
-            );
-
-            setSubcategoriaSel(
-              subs.length > 0
-                ? subs[0].id
-                : ""
-            );
-
-            setAbiertas({
-              [catUrl]:
-                true,
-            });
-
-            llevarCategoriaAlInicio(
-              catUrl
-            );
+          if (!categoriaExiste) {
+            return;
           }
 
-          return;
+          const subs =
+            obtenerSubcategorias(
+              catUrl
+            );
+
+          setCategoriaSel(
+            catUrl
+          );
+
+          setSubcategoriaSel(
+            subs.length > 0
+              ? subs[0].id
+              : ""
+          );
+
+          setAbiertas({
+            [catUrl]:
+              true,
+          });
+
+          llevarCategoriaAlInicio(
+            catUrl
+          );
         }
       }, 0);
 
@@ -302,9 +276,6 @@ export default function Sidebar({
 
   // ---------------------------------------------------------------------------
   // Flecha del acordeón.
-  //
-  // Solamente abre/cierra visualmente.
-  // No modifica categoría ni subcategoría seleccionada.
   // ---------------------------------------------------------------------------
 
   const toggleCategoria =
@@ -343,13 +314,10 @@ export default function Sidebar({
       setAbiertas({});
     };
 
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
-
   return (
     <div className="w-full">
       <div className="space-y-1.5 w-full">
+
         {/* Todas las áreas */}
 
         <button
@@ -394,12 +362,7 @@ export default function Sidebar({
                 }
                 className="space-y-1 w-full"
               >
-                {/* -----------------------------------------------------------
-                    ENCABEZADO DE CATEGORÍA
-
-                    El ref está aquí deliberadamente.
-                    El scroll debe detenerse aquí y no en la subcategoría.
-                ------------------------------------------------------------ */}
+                {/* Encabezado de categoría */}
 
                 <div
                   ref={(elemento) => {
@@ -457,12 +420,7 @@ export default function Sidebar({
                   )}
                 </div>
 
-                {/* -----------------------------------------------------------
-                    SUBCATEGORÍAS
-
-                    La primera queda seleccionada automáticamente cuando
-                    se elige una categoría, pero el scroll NO llega aquí.
-                ------------------------------------------------------------ */}
+                {/* Subcategorías */}
 
                 {estaExpandida &&
                   subcatsDeEsta.length >
@@ -515,6 +473,21 @@ export default function Sidebar({
             );
           }
         )}
+
+        {/*
+          Espacio técnico invisible.
+
+          Es necesario para que incluso las últimas categorías
+          puedan desplazarse hasta la parte superior visible
+          del panel lateral.
+
+          No altera el orden ni agrega elementos visibles.
+        */}
+
+        <div
+          aria-hidden="true"
+          className="h-[70vh]"
+        />
       </div>
     </div>
   );
