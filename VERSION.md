@@ -1,9 +1,10 @@
-# Proyecto Piña V1.4.6
+# Proyecto Piña V1.5.1
 
-Gestión de cuentas sociales intercambiables.
+Parche legal y de cumplimiento sobre la base estable V1.5.0.
 
-- TikTok e Instagram pueden desconectarse y conectarse nuevamente con otra cuenta.
-- Se añade el botón **Cambiar cuenta** en Administración → Videos y redes.
-- Al cambiar TikTok se intenta revocar el token anterior antes de iniciar la nueva autorización.
-- Los videos de la cuenta anterior dejan de consultarse al eliminar su conexión.
-- No requiere cambios SQL.
+- Se agrega `/terminos` con los Términos de Servicio.
+- Se agrega `/privacidad` con la Política de Privacidad.
+- Ambas páginas quedan enlazadas desde el footer público.
+- Se agregan ambas rutas al sitemap.
+- La Política de Privacidad describe de forma explícita el uso de integraciones autorizadas con TikTok y otras plataformas.
+- No requiere cambios de base de datos ni migraciones SQL.

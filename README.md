@@ -1,4 +1,4 @@
-> Versión actual: **V1.4.6**
+> Versión actual: **V1.5.1**
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
@@ -43,3 +43,7 @@ Antes de desplegar V1.4 ejecute `MIGRACION_V1_4.sql` en phpMyAdmin de la base ac
 
 ## V1.4.6 - cambio de cuentas sociales
 Desde Administración → Videos y redes, TikTok e Instagram pueden desconectarse o cambiarse por otra cuenta sin modificar la base de datos ni el código.
+
+
+## V1.5.1 - términos y privacidad
+Se agregan las páginas públicas `/terminos` y `/privacidad`, enlazadas desde el footer y registradas en el sitemap. Este parche está orientado también a los requisitos de revisión de integraciones externas como TikTok. No requiere cambios SQL.
