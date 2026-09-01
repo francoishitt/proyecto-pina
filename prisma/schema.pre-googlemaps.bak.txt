@@ -1,0 +1,149 @@
+// =====================================================================
+// 1. CONFIGURACIÓN PRINCIPAL
+// =====================================================================
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// =====================================================================
+// 2. MÓDULO DE USUARIOS (Delegado a Supabase Auth)
+// =====================================================================
+model Usuario {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  nombre          String?
+  apellidos       String?
+  password        String    // Aquí guardaremos la contraseña encriptada
+  rol             String    @default("ESTUDIANTE") // "ADMIN", "SUPERVISOR", "EDITOR" o "ESTUDIANTE"
+  
+  // Campos para la verificación OTP
+  otp             String?   // El código de 4 dígitos
+  otpExpires      DateTime? // Cuándo caduca ese código (ej. en 10 mins)
+  emailVerificado Boolean   @default(false) // Para saber si ya validó el OTP
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// =====================================================================
+// 3. MÓDULO DE CATÁLOGO DE CURSOS (LMS)
+// =====================================================================
+model Categoria {
+  id            String         @id @default(uuid())
+  nombre        String         @unique
+  slug          String         @unique
+  descripcion   String?
+  orden         Int            @default(0)
+  visible       Boolean        @default(true)
+  
+  subcategorias Subcategoria[]
+  cursos        Curso[]
+  
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Subcategoria {
+  id          String    @id @default(uuid())
+  nombre      String
+  slug        String    @unique
+  
+  categoriaId String
+  orden       Int       @default(0)
+  visible     Boolean   @default(true)
+  // Protege la categoría padre de borrados accidentales
+  categoria   Categoria @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  
+  cursos      Curso[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([nombre, categoriaId])
+  @@index([categoriaId]) // Índice de velocidad
+}
+
+model Curso {
+  id               String        @id @default(uuid())
+  titulo           String
+  tituloBusqueda   String        // Clave para el buscador en vivo sin tildes ni mayúsculas
+  slug             String        @unique
+  
+  descripcionCorta String        @db.VarChar(160) // Para las tarjetas del catálogo
+  descripcion      String        @db.Text         // Ficha detallada del curso
+  
+  portadaUrl       String?       
+  pdfUrl           String        
+  
+  esGratis         Boolean       @default(true) 
+  precio           Float? 
+  publicado        Boolean       @default(false)  // Switch maestro para ocultar/mostrar en la web
+  
+  categoriaId      String
+  categoria        Categoria     @relation(fields: [categoriaId], references: [id], onDelete: Restrict)
+  
+  subcategoriaId   String?
+  subcategoria     Subcategoria? @relation(fields: [subcategoriaId], references: [id], onDelete: Restrict)
+  
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  // Índices de alto rendimiento
+  @@index([tituloBusqueda])
+  @@index([categoriaId, publicado]) 
+  @@index([subcategoriaId, publicado])
+}
+
+// =====================================================================
+// 4. MÓDULO DE CONFIGURACIÓN GLOBAL (Autogestión del Centro)
+// =====================================================================
+model ConfiguracionWeb {
+  id                 String   @id @default("1") // Fila única
+  
+  nombreCentro       String   // Ej: "Proyecto Piña"
+  tituloSitio        String   // Pestaña del navegador
+  descripcionSeo     String?  @db.Text
+  logoUrl            String?
+  
+  whatsapp           String   // Para el botón flotante
+  whatsappMensaje    String?  @db.Text
+  telefono           String?
+  direccion          String?  @db.Text
+  emailContacto      String
+  
+  facebook           String?
+  instagram          String?
+  tiktok             String?
+  youtube            String?
+
+  mostrarVideosInicio Boolean @default(true)
+  cantidadVideosInicio Int     @default(6)
+  
+  heroTitulo         String   // Ej: "Ingresa a la Universidad con nuestros cursos"
+  heroSubtitulo      String
+  
+  updatedAt          DateTime @updatedAt
+}
+
+// =====================================================================
+// 5. CONEXIONES SOCIALES (tokens solo servidor)
+// =====================================================================
+model ConexionSocial {
+  id              String   @id @default(uuid())
+  plataforma      String   @unique // TIKTOK | INSTAGRAM
+  accessToken     String   @db.Text
+  refreshToken    String?  @db.Text
+  tokenExpiresAt  DateTime?
+  externalUserId  String?
+  username        String?
+  displayName     String?
+  profileUrl      String?  @db.Text
+  avatarUrl       String?  @db.Text
+  scope           String?  @db.Text
+  connectedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
