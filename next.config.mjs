@@ -10,7 +10,7 @@ const nextConfig = {
     },
   },
   outputFileTracingIncludes: {
-    "*": ["./node_modules/@swc/helpers/esm/**"],
+    "/*": ["./node_modules/@swc/helpers/**/*"],
   },
   images: {
     remotePatterns: [
