@@ -10,7 +10,11 @@ const nextConfig = {
     },
   },
   outputFileTracingIncludes: {
-    "/*": ["./node_modules/@swc/helpers/**/*"],
+    "/*": [
+      "./node_modules/@swc/helpers/**/*",
+      "./node_modules/react/**/*",
+      "./node_modules/react-dom/**/*",
+    ],
   },
   images: {
     remotePatterns: [
