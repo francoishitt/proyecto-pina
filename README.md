@@ -47,3 +47,6 @@ Desde Administración → Videos y redes, TikTok e Instagram pueden desconectars
 
 ## V1.5.1 - términos y privacidad
 Se agregan las páginas públicas `/terminos` y `/privacidad`, enlazadas desde el footer y registradas en el sitemap. Este parche está orientado también a los requisitos de revisión de integraciones externas como TikTok. No requiere cambios SQL.
+
+## Hotfix UI V7 - catálogo compacto
+La página `/cursos` usa una cabecera interna más compacta para mostrar antes el buscador, las categorías y el contenido. No cambia la lógica del catálogo ni el deployment.
