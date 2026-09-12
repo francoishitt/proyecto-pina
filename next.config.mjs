@@ -15,6 +15,7 @@ const nextConfig = {
       "./node_modules/react/**/*",
       "./node_modules/react-dom/**/*",
       "./generated/prisma/**/*",
+      "./node_modules/@prisma/**/*",
     ],
   },
   images: {
