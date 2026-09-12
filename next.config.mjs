@@ -9,16 +9,6 @@ const nextConfig = {
       bodySizeLimit: "30mb", 
     },
   },
-  // Hostinger crea un artefacto de runtime a partir de los trazados de Next.
-  // Forzamos la inclusión completa de @swc/helpers para evitar MODULE_NOT_FOUND.
-  outputFileTracingIncludes: {
-    "/*": [
-      "./node_modules/@swc/helpers/**/*",
-      "./node_modules/react/**/*",
-      "./node_modules/react-dom/**/*",
-    ],
-  },
-
   images: {
     remotePatterns: [
       {

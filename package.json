@@ -1,6 +1,6 @@
 {
   "name": "proyecto-pina",
-  "version": "1.5.4",
+  "version": "1.5.5",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -15,7 +15,6 @@
     "@prisma/adapter-mariadb": "7.9.1",
     "@prisma/client": "7.9.1",
     "@supabase/supabase-js": "2.112.2",
-    "@swc/helpers": "0.5.15",
     "bcryptjs": "3.0.3",
     "lucide-react": "1.30.0",
     "mariadb": "3.5.3",
@@ -46,6 +45,6 @@
   "packageManager": "npm@10.9.2",
   "engines": {
     "node": "22.x",
-    "npm": ">=10 <11"
+    "npm": "10.x"
   }
 }
