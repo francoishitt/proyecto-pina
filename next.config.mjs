@@ -9,6 +9,9 @@ const nextConfig = {
       bodySizeLimit: "30mb", 
     },
   },
+  outputFileTracingIncludes: {
+    "*": ["./node_modules/@swc/helpers/esm/**"],
+  },
   images: {
     remotePatterns: [
       {
