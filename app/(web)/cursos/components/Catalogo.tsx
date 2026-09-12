@@ -96,11 +96,11 @@ export default function Catalogo({
           <div className="hidden lg:flex flex-col w-[300px] shrink-0 border-r border-slate-200 bg-white/60 backdrop-blur-xl sticky top-[65px] h-[calc(100vh-65px)] z-20">
             
             {/* 🚀 NUEVA UBICACIÓN DEL BUSCADOR: Reemplaza al título de "Filtrar por Área" */}
-            <div className="p-4 sm:px-6 py-4 border-b border-slate-200 shrink-0">
+            <div className="px-4 sm:px-6 py-3 border-b border-slate-200 shrink-0">
               <Buscador busqueda={busqueda} setBusqueda={setBusqueda} totalResultados={cursosFiltrados.length} />
             </div>
 
-            <div className={`flex-1 overflow-y-auto overflow-x-hidden p-6 ${scrollbarClasses}`}>
+            <div className={`flex-1 overflow-y-auto overflow-x-hidden p-5 ${scrollbarClasses}`}>
               <Sidebar 
                 categorias={categoriasIniciales} 
                 subcategorias={subcategoriasIniciales} 
@@ -118,7 +118,7 @@ export default function Catalogo({
             {/* 🚀 ELIMINADO EL BUSCADOR SUPERIOR PEGAJOSO */}
 
             {/* Grilla de tarjetas maximizando el espacio. Le di un poco más de padding superior (py-6) para que respire */}
-            <div className="flex-1 px-4 py-4 sm:px-6 sm:py-5 relative">
+            <div className="flex-1 px-4 py-3 sm:px-6 sm:py-4 relative">
               <Grid 
                 cursos={cursosFiltrados} 
                 busquedaActual={busqueda} 
