@@ -14,8 +14,7 @@ const nextConfig = {
       "./node_modules/@swc/helpers/**/*",
       "./node_modules/react/**/*",
       "./node_modules/react-dom/**/*",
-      "./node_modules/.prisma/client/**/*",
-      "./node_modules/@prisma/client/**/*",
+      "./generated/prisma/**/*",
     ],
   },
   images: {
