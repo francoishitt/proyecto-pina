@@ -1,10 +1,9 @@
-# Proyecto Piña V1.5.1
+# Proyecto Piña V1.5.2
 
-Parche legal y de cumplimiento sobre la base estable V1.5.0.
+Hotfix de ejecución para Hostinger sobre la base V1.5.1.
 
-- Se agrega `/terminos` con los Términos de Servicio.
-- Se agrega `/privacidad` con la Política de Privacidad.
-- Ambas páginas quedan enlazadas desde el footer público.
-- Se agregan ambas rutas al sitemap.
-- La Política de Privacidad describe de forma explícita el uso de integraciones autorizadas con TikTok y otras plataformas.
-- No requiere cambios de base de datos ni migraciones SQL.
+- Se agrega `@swc/helpers` 0.5.15 como dependencia directa de producción.
+- El objetivo es evitar el error de runtime `Cannot find module '@swc/helpers/_/_interop_require_default'`.
+- No se modifica la lógica, diseño, base de datos ni integraciones sociales.
+- No requiere migraciones SQL.
+- Next.js se mantiene temporalmente en 16.3.0 para aislar el hotfix; la actualización de seguridad se hará en un despliegue separado una vez recuperado el sitio.

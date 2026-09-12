@@ -1,4 +1,4 @@
-> Versión actual: **V1.5.1**
+> Versión actual: **V1.5.2**
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
@@ -47,3 +47,7 @@ Desde Administración → Videos y redes, TikTok e Instagram pueden desconectars
 
 ## V1.5.1 - términos y privacidad
 Se agregan las páginas públicas `/terminos` y `/privacidad`, enlazadas desde el footer y registradas en el sitemap. Este parche está orientado también a los requisitos de revisión de integraciones externas como TikTok. No requiere cambios SQL.
+
+
+## V1.5.2 - hotfix de runtime Hostinger
+Se agrega `@swc/helpers` 0.5.15 como dependencia directa para corregir el error `Cannot find module '@swc/helpers/_/_interop_require_default'` observado en producción. No incluye cambios visuales, de base de datos ni de integraciones sociales.
