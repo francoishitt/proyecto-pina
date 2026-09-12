@@ -1,3 +1,5 @@
+> **V1.5.3:** hotfix de runtime Hostinger para `@swc/helpers` (trazado forzado + pnpm hoisted).
+
 > Versión actual: **V1.5.2**
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).

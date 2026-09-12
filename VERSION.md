@@ -1,3 +1,7 @@
+# Versión actual
+
+**1.5.3** — Hotfix Hostinger / trazado de @swc/helpers y pnpm hoisted.
+
 # Proyecto Piña V1.5.2
 
 Hotfix de ejecución para Hostinger sobre la base V1.5.1.
