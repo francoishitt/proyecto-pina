@@ -1,3 +1,5 @@
+# Estado actual: V1.5.4 — Hotfix npm / Hostinger
+
 > **V1.5.3:** hotfix de runtime Hostinger para `@swc/helpers` (trazado forzado + pnpm hoisted).
 
 > Versión actual: **V1.5.2**
